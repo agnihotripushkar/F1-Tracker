@@ -246,9 +246,9 @@ struct OnboardingPage2: View {
                 HStack(alignment: .top, spacing: 12) {
                     // Driver standings
                     VStack(spacing: 10) {
-                        DriverStandingRow(initials: "MV", initialsColor: Color(red: 0.15, green: 0.35, blue: 0.9), team: "RED BULL", name: "Verstappen", points: "454 PTS")
-                        DriverStandingRow(initials: "LH", initialsColor: Color(red: 0.15, green: 0.55, blue: 0.45), team: "MERCEDES", name: "Hamilton", points: "234 PTS")
-                        DriverStandingRow(initials: "CL", initialsColor: Color.red, team: "FERRARI", name: "Leclerc", points: "206 PTS")
+                        DriverStandingRow(initials: "MV", initialsColor: Color(red: 0.15, green: 0.35, blue: 0.9), team: "RED BULL", name: "Verstappen", points: "0 PTS")
+                        DriverStandingRow(initials: "LH", initialsColor: Color.red, team: "FERRARI", name: "Hamilton", points: "0 PTS")
+                        DriverStandingRow(initials: "LN", initialsColor: Color(red: 1.0, green: 0.55, blue: 0.0), team: "MCLAREN", name: "Norris", points: "0 PTS")
                     }
                     .frame(maxWidth: .infinity)
 
@@ -578,7 +578,7 @@ struct LewisHamiltonCard: View {
                     Text("Lewis Hamilton")
                         .font(.system(size: 26, weight: .black))
                         .foregroundColor(.white)
-                    Text("MERCEDES-AMG\nPETRONAS")
+                    Text("SCUDERIA FERRARI")
                         .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
                         .lineSpacing(2)
