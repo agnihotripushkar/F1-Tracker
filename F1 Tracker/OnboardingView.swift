@@ -504,15 +504,15 @@ struct OnboardingPage3: View {
                             Image(systemName: "arrow.right")
                                 .font(.system(size: 16, weight: .bold))
                         }
-                        .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.08))
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 58)
-                        .background(Color(red: 0.0, green: 0.88, blue: 0.78))
+                        .background(Color(red: 1.0, green: 0.45, blue: 0.0))
                         .cornerRadius(14)
                     }
                     .padding(.horizontal, 20)
 
-                    PageDotsView(current: 2, total: 3, activeColor: Color(red: 0.0, green: 0.88, blue: 0.78))
+                    PageDotsView(current: 2, total: 3, activeColor: Color(red: 1.0, green: 0.45, blue: 0.0))
                         .padding(.bottom, 8)
                 }
                 .padding(.bottom, 40)
