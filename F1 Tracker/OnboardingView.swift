@@ -91,27 +91,6 @@ struct OnboardingPage1: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
 
-                    // NEXT button
-                    Button {
-                        withAnimation {
-                            currentPage = 1
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Text("NEXT")
-                                .font(.system(size: 17, weight: .bold, design: .monospaced))
-                                .tracking(2)
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 16, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 58)
-                        .background(Color(red: 1.0, green: 0.45, blue: 0.0))
-                        .cornerRadius(14)
-                    }
-                    .padding(.horizontal, 20)
-
                     // Page dots
                     PageDotsView(current: 0, total: 3, activeColor: Color(red: 1.0, green: 0.45, blue: 0.0))
                         .padding(.bottom, 8)
@@ -302,27 +281,6 @@ struct OnboardingPage2: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
 
-                    // CONTINUE button
-                    Button {
-                        withAnimation {
-                            currentPage = 2
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Text("CONTINUE")
-                                .font(.system(size: 17, weight: .bold, design: .monospaced))
-                                .tracking(2)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 16, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 58)
-                        .background(Color.red)
-                        .cornerRadius(14)
-                    }
-                    .padding(.horizontal, 20)
-
                     PageDotsView(current: 1, total: 3, activeColor: .red)
                         .padding(.bottom, 8)
                 }
@@ -505,29 +463,18 @@ struct OnboardingPage3: View {
 
             VStack(spacing: 0) {
                 // Top bar
-                HStack {
-                    HStack(spacing: 8) {
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 18, weight: .black))
-                            .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
-                        Text("F1 ")
-                            .font(.system(size: 20, weight: .black, design: .monospaced))
-                            .foregroundColor(.white)
-                        + Text("PREMIUM")
-                            .font(.system(size: 20, weight: .black, design: .monospaced))
-                            .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
-                    }
-
-                    Spacer()
-
-                    Button {
-                        hasCompletedOnboarding = true
-                    } label: {
-                        Text("SKIP")
-                            .font(.system(size: 15, weight: .semibold, design: .monospaced))
-                            .foregroundColor(Color.white.opacity(0.6))
-                    }
+                HStack(spacing: 8) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
+                    Text("F1 ")
+                        .font(.system(size: 20, weight: .black, design: .monospaced))
+                        .foregroundColor(.white)
+                    + Text("PREMIUM")
+                        .font(.system(size: 20, weight: .black, design: .monospaced))
+                        .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
                 .padding(.top, 56)
                 .padding(.bottom, 20)
