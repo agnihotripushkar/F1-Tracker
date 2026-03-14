@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct OnboardingView: View {
     @Binding var hasCompletedOnboarding: Bool
@@ -467,12 +468,14 @@ struct OnboardingPage3: View {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 18, weight: .black))
                         .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
-                    Text("F1 ")
-                        .font(.system(size: 20, weight: .black, design: .monospaced))
-                        .foregroundColor(.white)
-                    + Text("PREMIUM")
-                        .font(.system(size: 20, weight: .black, design: .monospaced))
-                        .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
+                    HStack(spacing: 0) {
+                        Text("F1 ")
+                            .font(.system(size: 20, weight: .black, design: .monospaced))
+                            .foregroundColor(.white)
+                        Text("PREMIUM")
+                            .font(.system(size: 20, weight: .black, design: .monospaced))
+                            .foregroundColor(Color(red: 1.0, green: 0.45, blue: 0.0))
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
