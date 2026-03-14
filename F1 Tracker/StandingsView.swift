@@ -7,6 +7,8 @@ import SwiftUI
 
 // MARK: - Data Models
 
+enum TrendMagnitude { case big, small, none }
+
 struct DriverStanding: Identifiable {
     let id = UUID()
     let position: Int
@@ -14,89 +16,71 @@ struct DriverStanding: Identifiable {
     let team: String
     let teamColor: Color
     let points: Int
-    let trend: Trend
+    let trendDirection: TrendDirection
+    let trendMagnitude: TrendMagnitude
     let imageName: String?
 }
+
+enum TrendDirection { case up, down, same }
 
 struct ConstructorStanding: Identifiable {
     let id = UUID()
     let position: Int
-    let positionChange: Trend
     let name: String
-    let base: String
+    let drivers: String
     let points: Int
     let teamColor: Color
     let logoSystemName: String
+    let trendDirection: TrendDirection
+    let trendMagnitude: TrendMagnitude
+    let isNewEntry: Bool
 }
 
-enum Trend {
-    case up, down, same
-
-    var icon: String {
-        switch self {
-        case .up: return "arrowtriangle.up.fill"
-        case .down: return "arrowtriangle.down.fill"
-        case .same: return "minus"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .up: return .green
-        case .down: return Color(red: 0.9, green: 0.2, blue: 0.2)
-        case .same: return Color(white: 0.55)
-        }
-    }
-}
-
-// MARK: - Hardcoded Data
+// MARK: - Hardcoded 2026 Data
 
 private let driverStandings: [DriverStanding] = [
-    DriverStanding(position: 1, name: "MAX VERSTAPPEN",  team: "RED BULL",  teamColor: Color(red: 0.19, green: 0.27, blue: 0.67), points: 255, trend: .same,  imageName: nil),
-    DriverStanding(position: 2, name: "LANDO NORRIS",    team: "MCLAREN",   teamColor: Color(red: 1.0,  green: 0.55, blue: 0.0),  points: 189, trend: .up,    imageName: nil),
-    DriverStanding(position: 3, name: "CARLOS SAINZ",    team: "FERRARI",   teamColor: Color(red: 0.9,  green: 0.1,  blue: 0.1),  points: 148, trend: .up,    imageName: nil),
-    DriverStanding(position: 4, name: "CHARLES LECLERC", team: "FERRARI",   teamColor: Color(red: 0.9,  green: 0.1,  blue: 0.1),  points: 138, trend: .up,    imageName: nil),
-    DriverStanding(position: 5, name: "OSCAR PIASTRI",   team: "MCLAREN",   teamColor: Color(red: 1.0,  green: 0.55, blue: 0.0),  points: 114, trend: .down,  imageName: nil),
-    DriverStanding(position: 6, name: "GEORGE RUSSELL",  team: "MERCEDES",  teamColor: Color(red: 0.0,  green: 0.82, blue: 0.75), points: 111, trend: .same,  imageName: nil),
-    DriverStanding(position: 7, name: "LEWIS HAMILTON",  team: "FERRARI",   teamColor: Color(red: 0.9,  green: 0.1,  blue: 0.1),  points: 85,  trend: .up,    imageName: nil),
-    DriverStanding(position: 8, name: "SERGIO PEREZ",    team: "RED BULL",  teamColor: Color(red: 0.19, green: 0.27, blue: 0.67), points: 79,  trend: .down,  imageName: nil),
-    DriverStanding(position: 9, name: "FERNANDO ALONSO", team: "ASTON MARTIN", teamColor: Color(red: 0.0, green: 0.55, blue: 0.38), points: 62, trend: .same, imageName: nil),
-    DriverStanding(position: 10, name: "LANCE STROLL",   team: "ASTON MARTIN", teamColor: Color(red: 0.0, green: 0.55, blue: 0.38), points: 24, trend: .same, imageName: nil),
+    DriverStanding(position: 1,  name: "Lewis Hamilton",    team: "Ferrari",          teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), points: 254, trendDirection: .up,   trendMagnitude: .big,   imageName: nil),
+    DriverStanding(position: 2,  name: "Charles Leclerc",   team: "Ferrari",          teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), points: 228, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
+    DriverStanding(position: 3,  name: "Max Verstappen",    team: "Red Bull-Ford",    teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), points: 221, trendDirection: .down, trendMagnitude: .big,   imageName: nil),
+    DriverStanding(position: 4,  name: "George Russell",    team: "Mercedes-AMG",     teamColor: Color(red: 0.0,  green: 0.78, blue: 0.70), points: 209, trendDirection: .same, trendMagnitude: .none,  imageName: nil),
+    DriverStanding(position: 5,  name: "Nico Hülkenberg",   team: "Audi F1 Team",     teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), points: 138, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
+    DriverStanding(position: 6,  name: "Lando Norris",      team: "McLaren",          teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  points: 131, trendDirection: .down, trendMagnitude: .small, imageName: nil),
+    DriverStanding(position: 7,  name: "Carlos Sainz",      team: "Audi F1 Team",     teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), points: 107, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
+    DriverStanding(position: 8,  name: "Fernando Alonso",   team: "Aston Martin",     teamColor: Color(red: 0.0,  green: 0.55, blue: 0.30), points: 103, trendDirection: .same, trendMagnitude: .none,  imageName: nil),
+    DriverStanding(position: 9,  name: "Oscar Piastri",     team: "McLaren",          teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  points: 100, trendDirection: .down, trendMagnitude: .small, imageName: nil),
+    DriverStanding(position: 10, name: "Daniel Ricciardo",  team: "Red Bull-Ford",    teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), points: 194, trendDirection: .down, trendMagnitude: .big,   imageName: nil),
 ]
 
 private let constructorStandings: [ConstructorStanding] = [
-    ConstructorStanding(position: 1, positionChange: .same, name: "Oracle Red Bull Racing",    base: "MILTON KEYNES, UK",  points: 402, teamColor: Color(red: 0.19, green: 0.27, blue: 0.67), logoSystemName: "circle.hexagongrid.fill"),
-    ConstructorStanding(position: 2, positionChange: .up,   name: "McLaren Formula 1 Team",   base: "WOKING, UK",         points: 338, teamColor: Color(red: 1.0,  green: 0.55, blue: 0.0),  logoSystemName: "triangle.fill"),
-    ConstructorStanding(position: 3, positionChange: .down, name: "Scuderia Ferrari",         base: "MARANELLO, ITALY",   points: 322, teamColor: Color(red: 0.9,  green: 0.1,  blue: 0.1),  logoSystemName: "shield.fill"),
-    ConstructorStanding(position: 4, positionChange: .same, name: "Mercedes-AMG Petronas",    base: "BRACKLEY, UK",       points: 266, teamColor: Color(red: 0.0,  green: 0.82, blue: 0.75), logoSystemName: "star.fill"),
-    ConstructorStanding(position: 5, positionChange: .same, name: "Aston Martin Aramco",      base: "SILVERSTONE, UK",    points: 73,  teamColor: Color(red: 0.0,  green: 0.55, blue: 0.38), logoSystemName: "diamond.fill"),
-    ConstructorStanding(position: 6, positionChange: .up,   name: "Visa Cash App RB",         base: "FAENZA, ITALY",      points: 34,  teamColor: Color(red: 0.3,  green: 0.5,  blue: 0.85), logoSystemName: "circle.fill"),
-    ConstructorStanding(position: 7, positionChange: .down, name: "Haas F1 Team",             base: "KANNAPOLIS, USA",    points: 31,  teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), logoSystemName: "hexagon.fill"),
-    ConstructorStanding(position: 8, positionChange: .same, name: "Williams Racing",          base: "GROVE, UK",          points: 16,  teamColor: Color(red: 0.0,  green: 0.4,  blue: 0.85), logoSystemName: "bolt.fill"),
-    ConstructorStanding(position: 9, positionChange: .same, name: "Kick Sauber",              base: "HINWIL, SWITZERLAND",points: 4,   teamColor: Color(red: 0.1,  green: 0.75, blue: 0.3),  logoSystemName: "plus.circle.fill"),
-    ConstructorStanding(position: 10, positionChange: .same, name: "Alpine F1 Team",          base: "ENSTONE, UK",        points: 3,   teamColor: Color(red: 0.05, green: 0.35, blue: 0.85), logoSystemName: "arrow.up.circle.fill"),
+    ConstructorStanding(position: 1, name: "Ferrari",          drivers: "Hamilton / Leclerc",    points: 482, teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), logoSystemName: "shield.fill",           trendDirection: .up,   trendMagnitude: .big,   isNewEntry: false),
+    ConstructorStanding(position: 2, name: "Red Bull-Ford",    drivers: "Verstappen / Ricciardo", points: 415, teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), logoSystemName: "circle.hexagongrid.fill", trendDirection: .down, trendMagnitude: .big,   isNewEntry: false),
+    ConstructorStanding(position: 3, name: "Mercedes-AMG",     drivers: "Russell / Antonelli",   points: 388, teamColor: Color(red: 0.0,  green: 0.78, blue: 0.70), logoSystemName: "star.fill",             trendDirection: .same, trendMagnitude: .none,  isNewEntry: false),
+    ConstructorStanding(position: 4, name: "Audi F1 Team",     drivers: "Hülkenberg / Sainz",    points: 245, teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), logoSystemName: "circle.fill",           trendDirection: .up,   trendMagnitude: .small, isNewEntry: true),
+    ConstructorStanding(position: 5, name: "McLaren",          drivers: "Norris / Piastri",      points: 231, teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  logoSystemName: "triangle.fill",         trendDirection: .down, trendMagnitude: .small, isNewEntry: false),
+    ConstructorStanding(position: 6, name: "Aston Martin-Honda", drivers: "Alonso / Stroll",     points: 198, teamColor: Color(red: 0.0,  green: 0.55, blue: 0.30), logoSystemName: "diamond.fill",          trendDirection: .same, trendMagnitude: .none,  isNewEntry: false),
 ]
+
+// MARK: - Accent / brand color
+
+private let f1Orange = Color(red: 1.0, green: 0.38, blue: 0.0)
+private let bgColor  = Color(red: 0.07, green: 0.04, blue: 0.02)
+private let rowColor = Color(red: 0.11, green: 0.07, blue: 0.04)
 
 // MARK: - Main Standings View
 
 struct StandingsView: View {
-    @State private var selectedTab: StandingsTab = .drivers
+    @State private var selectedTab: StandingsTab = .constructors
 
     enum StandingsTab { case drivers, constructors }
 
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.06, blue: 0.09)
-                .ignoresSafeArea()
+            bgColor.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
                 header
-
-                // Toggle tabs
-                tabSelector
-
-                // Content
+                tabToggle
+                subHeader
                 if selectedTab == .drivers {
                     DriversStandingList()
                 } else {
@@ -106,279 +90,100 @@ struct StandingsView: View {
         }
     }
 
-    // MARK: Header
+    // MARK: – Header
     private var header: some View {
-        HStack {
+        HStack(alignment: .center) {
             Button { } label: {
                 Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundColor(.white)
             }
 
             Spacer()
 
-            HStack(spacing: 6) {
-                Text("STANDINGS")
-                    .font(.system(size: 18, weight: .black))
+            VStack(spacing: 2) {
+                Text("CHAMPIONSHIP 2026")
+                    .font(.system(size: 17, weight: .black, design: .default))
+                    .italic()
                     .foregroundColor(.white)
-                Text("2025")
-                    .font(.system(size: 18, weight: .black))
-                    .foregroundColor(Color(red: 1.0, green: 0.4, blue: 0.0))
+                Text("SEASON STANDINGS")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(2)
+                    .foregroundColor(f1Orange)
             }
 
             Spacer()
 
             Button { } label: {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundColor(.white)
             }
         }
         .padding(.horizontal, 20)
         .padding(.top, 56)
-        .padding(.bottom, 14)
+        .padding(.bottom, 16)
     }
 
-    // MARK: Tab selector
-    private var tabSelector: some View {
+    // MARK: – Pill toggle
+    private var tabToggle: some View {
         HStack(spacing: 0) {
-            tabButton("DRIVERS", tab: .drivers)
-            tabButton("CONSTRUCTORS", tab: .constructors)
+            toggleButton("DRIVERS",      tab: .drivers)
+            toggleButton("CONSTRUCTORS", tab: .constructors)
         }
-        .background(Color(red: 0.08, green: 0.09, blue: 0.12))
+        .background(Color(red: 0.14, green: 0.08, blue: 0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 20)
     }
 
     @ViewBuilder
-    private func tabButton(_ label: String, tab: StandingsTab) -> some View {
-        let isSelected = selectedTab == tab
+    private func toggleButton(_ label: String, tab: StandingsTab) -> some View {
+        let isActive = selectedTab == tab
         Button {
             withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
         } label: {
-            VStack(spacing: 0) {
-                Text(label)
-                    .font(.system(size: 13, weight: .bold))
-                    .tracking(1)
-                    .foregroundColor(isSelected ? .white : Color(white: 0.45))
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: .infinity)
-
-                Rectangle()
-                    .fill(isSelected ? Color(red: 1.0, green: 0.4, blue: 0.0) : Color.clear)
-                    .frame(height: 2)
-            }
-        }
-    }
-}
-
-// MARK: - Drivers List
-
-struct DriversStandingList: View {
-    private let top3 = Array(driverStandings.prefix(3))
-    private let rest  = Array(driverStandings.dropFirst(3))
-
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                // Podium
-                PodiumView(drivers: top3)
-                    .padding(.bottom, 16)
-
-                // Remaining drivers
-                VStack(spacing: 8) {
-                    ForEach(rest) { driver in
-                        DriverRow(driver: driver)
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 100) // space for nav bar
-            }
-        }
-    }
-}
-
-// MARK: - Podium
-
-struct PodiumView: View {
-    let drivers: [DriverStanding]
-
-    var body: some View {
-        ZStack {
-            // subtle radial glow behind podium
-            RadialGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 1.0, green: 0.4, blue: 0.0).opacity(0.12),
-                    Color.clear
-                ]),
-                center: .center,
-                startRadius: 10,
-                endRadius: 200
-            )
-            .frame(height: 300)
-
-            HStack(alignment: .bottom, spacing: 0) {
-                // 2nd place
-                PodiumCard(driver: drivers[1], rank: 2, size: .medium)
-                // 1st place
-                PodiumCard(driver: drivers[0], rank: 1, size: .large)
-                // 3rd place
-                PodiumCard(driver: drivers[2], rank: 3, size: .small)
-            }
-            .padding(.horizontal, 8)
-        }
-        .padding(.top, 16)
-    }
-}
-
-enum PodiumSize { case large, medium, small }
-
-struct PodiumCard: View {
-    let driver: DriverStanding
-    let rank: Int
-    let size: PodiumSize
-
-    private var avatarSize: CGFloat {
-        switch size {
-        case .large: return 90
-        case .medium: return 74
-        case .small: return 64
-        }
-    }
-
-    private var ringColor: Color {
-        switch size {
-        case .large:  return Color(red: 1.0, green: 0.4, blue: 0.0)
-        case .medium: return Color(white: 0.7)
-        case .small:  return Color(red: 0.8, green: 0.55, blue: 0.15)
-        }
-    }
-
-    private var barHeight: CGFloat {
-        switch size {
-        case .large: return 80
-        case .medium: return 50
-        case .small: return 30
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            // Trophy for P1
-            if size == .large {
-                Image(systemName: "trophy.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(red: 1.0, green: 0.4, blue: 0.0))
-                    .padding(.bottom, 4)
-            }
-
-            // Avatar circle
-            ZStack {
-                Circle()
-                    .stroke(ringColor, lineWidth: 3)
-                    .frame(width: avatarSize, height: avatarSize)
-
-                Circle()
-                    .fill(Color(white: 0.15))
-                    .frame(width: avatarSize - 8, height: avatarSize - 8)
-
-                Image(systemName: "person.fill")
-                    .font(.system(size: avatarSize * 0.4))
-                    .foregroundColor(Color(white: 0.5))
-
-                // Rank badge
-                ZStack {
-                    Circle()
-                        .fill(ringColor)
-                        .frame(width: 22, height: 22)
-                    Text("\(rank)")
-                        .font(.system(size: 11, weight: .black))
-                        .foregroundColor(.white)
-                }
-                .offset(x: avatarSize * 0.36, y: avatarSize * 0.36)
-            }
-
-            // Name + points
-            VStack(spacing: 2) {
-                Text(driver.name)
-                    .font(.system(size: size == .large ? 11 : 9, weight: .bold))
-                    .foregroundColor(Color(white: 0.65))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.7)
-
-                Text("\(driver.points) PTS")
-                    .font(.system(size: size == .large ? 14 : 11, weight: .black))
-                    .foregroundColor(size == .large ? Color(red: 1.0, green: 0.4, blue: 0.0) : .white)
-            }
-            .padding(.top, 6)
-            .frame(width: size == .large ? 110 : 90)
-
-            // Podium bar
-            RoundedRectangle(cornerRadius: 4)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [ringColor.opacity(0.7), ringColor.opacity(0.3)]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+            Text(label)
+                .font(.system(size: 13, weight: .black))
+                .tracking(1)
+                .foregroundColor(isActive ? .white : Color(white: 0.45))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    isActive
+                    ? f1Orange.clipShape(RoundedRectangle(cornerRadius: 12))
+                    : Color.clear.clipShape(RoundedRectangle(cornerRadius: 12))
                 )
-                .frame(height: barHeight)
-                .padding(.top, 8)
         }
-        .frame(maxWidth: .infinity)
+        .padding(4)
     }
-}
 
-// MARK: - Driver Row
-
-struct DriverRow: View {
-    let driver: DriverStanding
-
-    var body: some View {
-        HStack(spacing: 12) {
-            // Position
-            Text("\(driver.position)")
-                .font(.system(size: 22, weight: .black))
-                .foregroundColor(Color(white: 0.4))
-                .frame(width: 30)
-
-            // Team color bar
-            RoundedRectangle(cornerRadius: 2)
-                .fill(driver.teamColor)
-                .frame(width: 4, height: 38)
-
-            // Name & team
-            VStack(alignment: .leading, spacing: 2) {
-                Text(driver.name)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color(white: 0.85))
-                    .lineLimit(1)
-                Text(driver.team)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Color(white: 0.45))
-            }
+    // MARK: – Sub-header
+    private var subHeader: some View {
+        let title = selectedTab == .drivers
+            ? "DRIVERS WORLD\nCHAMPIONSHIP"
+            : "CONSTRUCTORS WORLD\nCHAMPIONSHIP"
+        return HStack(alignment: .top) {
+            Text(title)
+                .font(.system(size: 12, weight: .bold))
+                .tracking(1)
+                .foregroundColor(Color(white: 0.60))
+                .fixedSize(horizontal: false, vertical: true)
 
             Spacer()
 
-            // Points
-            HStack(spacing: 4) {
-                Text("\(driver.points)")
-                    .font(.system(size: 15, weight: .black))
-                    .foregroundColor(.white)
-                Text("PTS")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(Color(white: 0.45))
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("ROUND")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1)
+                    .foregroundColor(f1Orange)
+                Text("18/24")
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundColor(f1Orange)
             }
-
-            // Trend
-            Image(systemName: driver.trend.icon)
-                .font(.system(size: 10))
-                .foregroundColor(driver.trend.color)
-                .frame(width: 16)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Color(red: 0.10, green: 0.11, blue: 0.14))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 20)
+        .padding(.bottom, 14)
     }
 }
 
@@ -387,78 +192,232 @@ struct DriverRow: View {
 struct ConstructorsStandingList: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                ForEach(constructorStandings) { constructor in
-                    ConstructorRow(constructor: constructor)
-                    if constructor.position != constructorStandings.last?.position {
-                        Divider()
-                            .background(Color(white: 0.12))
-                            .padding(.leading, 76)
-                    }
+            VStack(spacing: 12) {
+                ForEach(constructorStandings) { item in
+                    ConstructorRow2026(constructor: item)
                 }
             }
+            .padding(.horizontal, 12)
             .padding(.bottom, 100)
         }
     }
 }
 
-struct ConstructorRow: View {
+struct ConstructorRow2026: View {
     let constructor: ConstructorStanding
 
     var body: some View {
-        HStack(spacing: 14) {
-            // Position + change
-            VStack(spacing: 2) {
-                Text("\(constructor.position)")
-                    .font(.system(size: 20, weight: .black))
-                    .foregroundColor(.white)
-                Image(systemName: constructor.positionChange.icon)
-                    .font(.system(size: 9))
-                    .foregroundColor(constructor.positionChange.color)
+        ZStack(alignment: .topTrailing) {
+            HStack(spacing: 0) {
+                // Left color bar
+                Rectangle()
+                    .fill(constructor.teamColor)
+                    .frame(width: 4)
+                    .clipShape(
+                        .rect(
+                            topLeadingRadius: 10,
+                            bottomLeadingRadius: 10
+                        )
+                    )
+
+                HStack(spacing: 14) {
+                    // Position
+                    Text("\(constructor.position)")
+                        .font(.system(size: 32, weight: .black, design: .default))
+                        .italic()
+                        .foregroundColor(.white)
+                        .frame(width: 36, alignment: .center)
+
+                    // Logo
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color(red: 0.15, green: 0.10, blue: 0.06))
+                            .frame(width: 64, height: 64)
+                        Image(systemName: constructor.logoSystemName)
+                            .font(.system(size: 26))
+                            .foregroundColor(constructor.teamColor)
+                    }
+
+                    // Name + drivers + trend
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Text(constructor.name)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                            TrendIcon(direction: constructor.trendDirection,
+                                      magnitude: constructor.trendMagnitude)
+                        }
+                        Text(constructor.drivers)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Color(white: 0.50))
+                    }
+
+                    Spacer()
+
+                    // Points
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("\(constructor.points)")
+                            .font(.system(size: 28, weight: .black, design: .default))
+                            .italic()
+                            .foregroundColor(.white)
+                        Text("POINTS")
+                            .font(.system(size: 9, weight: .bold))
+                            .tracking(0.5)
+                            .foregroundColor(Color(white: 0.45))
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 16)
             }
-            .frame(width: 28)
+            .background(rowColor)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
 
-            // Team color stripe
-            RoundedRectangle(cornerRadius: 2)
-                .fill(constructor.teamColor)
-                .frame(width: 4, height: 52)
-
-            // Team logo placeholder
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(white: 0.12))
-                    .frame(width: 52, height: 52)
-                Image(systemName: constructor.logoSystemName)
-                    .font(.system(size: 22))
-                    .foregroundColor(constructor.teamColor)
-            }
-
-            // Team name + base
-            VStack(alignment: .leading, spacing: 3) {
-                Text(constructor.name)
-                    .font(.system(size: 14, weight: .bold))
+            // NEW ENTRY badge
+            if constructor.isNewEntry {
+                Text("NEW ENTRY")
+                    .font(.system(size: 9, weight: .black))
+                    .tracking(0.5)
                     .foregroundColor(.white)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
-                Text(constructor.base)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(Color(white: 0.45))
-            }
-
-            Spacer()
-
-            // Points
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(constructor.points)")
-                    .font(.system(size: 22, weight: .black).italic())
-                    .foregroundColor(.white)
-                Text("POINTS")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(Color(white: 0.45))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(f1Orange)
+                    .clipShape(Capsule())
+                    .padding(.top, 10)
+                    .padding(.trailing, 14)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+    }
+}
+
+// MARK: - Drivers List
+
+struct DriversStandingList: View {
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 12) {
+                ForEach(driverStandings) { driver in
+                    DriverRow2026(driver: driver)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 100)
+        }
+    }
+}
+
+struct DriverRow2026: View {
+    let driver: DriverStanding
+
+    var body: some View {
+        HStack(spacing: 0) {
+            // Left color bar
+            Rectangle()
+                .fill(driver.teamColor)
+                .frame(width: 4)
+                .clipShape(
+                    .rect(
+                        topLeadingRadius: 10,
+                        bottomLeadingRadius: 10
+                    )
+                )
+
+            HStack(spacing: 14) {
+                // Position
+                Text("\(driver.position)")
+                    .font(.system(size: 32, weight: .black, design: .default))
+                    .italic()
+                    .foregroundColor(.white)
+                    .frame(width: 36, alignment: .center)
+
+                // Driver avatar placeholder
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(red: 0.15, green: 0.10, blue: 0.06))
+                        .frame(width: 64, height: 64)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(driver.teamColor.opacity(0.8))
+                }
+
+                // Name, team, trend
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(driver.name)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        TrendIcon(direction: driver.trendDirection,
+                                  magnitude: driver.trendMagnitude)
+                    }
+                    Text(driver.team)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color(white: 0.50))
+                }
+
+                Spacer()
+
+                // Points
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("\(driver.points)")
+                        .font(.system(size: 28, weight: .black, design: .default))
+                        .italic()
+                        .foregroundColor(.white)
+                    Text("POINTS")
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(0.5)
+                        .foregroundColor(Color(white: 0.45))
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 16)
+        }
+        .background(rowColor)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - Trend Icon
+
+struct TrendIcon: View {
+    let direction: TrendDirection
+    let magnitude: TrendMagnitude
+
+    private var color: Color {
+        switch direction {
+        case .up:   return Color(red: 0.15, green: 0.82, blue: 0.35)
+        case .down: return Color(red: 0.90, green: 0.20, blue: 0.20)
+        case .same: return Color(white: 0.50)
+        }
+    }
+
+    var body: some View {
+        switch direction {
+        case .same:
+            Image(systemName: "minus")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(color)
+        case .up:
+            if magnitude == .big {
+                // Double chevron up
+                Image(systemName: "chevron.up.2")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(color)
+            } else {
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(color)
+            }
+        case .down:
+            if magnitude == .big {
+                Image(systemName: "chevron.down.2")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(color)
+            } else {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(color)
+            }
+        }
     }
 }
 
