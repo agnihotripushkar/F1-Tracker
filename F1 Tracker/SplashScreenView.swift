@@ -9,65 +9,75 @@ import SwiftUI
 
 struct SplashScreenView: View {
     @State private var animatingDots = false
-    
+    @State private var showMainApp = false
+
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.05, green: 0.08, blue: 0.12),
-                    Color(red: 0.08, green: 0.05, blue: 0.08),
-                    Color(red: 0.05, green: 0.08, blue: 0.12)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                Spacer()
-                
-                // F1 Logo
-                F1Logo()
-                    .frame(width: 180, height: 180)
-                
-                Spacer()
-                    .frame(height: 80)
-                
-                // "RACE READY" Text
-                Text("RACE READY")
-                    .font(.system(size: 48, weight: .black, design: .default))
-                    .tracking(8)
-                    .foregroundColor(.white)
-                
-                Spacer()
-                    .frame(height: 20)
-                
-                // Tagline with decorative lines
-                HStack(spacing: 15) {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.5))
-                        .frame(width: 40, height: 1)
-                    
-                    Text("ANALYZE. OPTIMIZE. WIN.")
-                        .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .tracking(3)
-                        .foregroundColor(.gray)
-                    
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.5))
-                        .frame(width: 40, height: 1)
+        if showMainApp {
+            MainTabView()
+        } else {
+            ZStack {
+                // Background gradient
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.05, green: 0.08, blue: 0.12),
+                        Color(red: 0.08, green: 0.05, blue: 0.08),
+                        Color(red: 0.05, green: 0.08, blue: 0.12)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    Spacer()
+
+                    // F1 Logo
+                    F1Logo()
+                        .frame(width: 180, height: 180)
+
+                    Spacer()
+                        .frame(height: 80)
+
+                    // "RACE READY" Text
+                    Text("RACE READY")
+                        .font(.system(size: 48, weight: .black, design: .default))
+                        .tracking(8)
+                        .foregroundColor(.white)
+
+                    Spacer()
+                        .frame(height: 20)
+
+                    // Tagline with decorative lines
+                    HStack(spacing: 15) {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.5))
+                            .frame(width: 40, height: 1)
+
+                        Text("ANALYZE. OPTIMIZE. WIN.")
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
+                            .tracking(3)
+                            .foregroundColor(.gray)
+
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.5))
+                            .frame(width: 40, height: 1)
+                    }
+
+                    Spacer()
+
+                    // Loading dots
+                    LoadingDots(animating: $animatingDots)
+                        .padding(.bottom, 60)
                 }
-                
-                Spacer()
-                
-                // Loading dots
-                LoadingDots(animating: $animatingDots)
-                    .padding(.bottom, 60)
             }
-        }
-        .onAppear {
-            animatingDots = true
+            .onAppear {
+                animatingDots = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        showMainApp = true
+                    }
+                }
+            }
         }
     }
 }
