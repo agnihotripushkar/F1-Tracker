@@ -1,79 +1,47 @@
-🛠 System PRD: Technical Requirements
-This document focuses on the how—the infrastructure and frameworks required to make the app functional and performant.
+# F1 Tracker
 
-1. Project Overview
-Target Platform: iOS 17.0+ (for stable SwiftData and ActivityKit features).
+An iOS app for Formula 1 fans to follow live race weekends, driver standings, team info, and the latest news — all in one place.
 
-Language/Framework: Swift 6, SwiftUI, ActivityKit, WidgetKit.
+## Features
 
-Data Source: Ergast Developer API (or OpenF1 API) for race data.
+- **Home** — Countdown to the next session, track info (Albert Park), weather conditions, and the full weekend schedule
+- **Racing** — Live race hub with timing and session data
+- **Standings** — Current driver and constructor championship standings
+- **Teams** — Team and driver profiles
+- **News** — Latest F1 headlines
 
-2. Core Functional Requirements
-Activity Lifecycle Management: The app must be able to start, update, and end a Live Activity session based on the race schedule.
+## Tech Stack
 
-Frequent Updates: Support for updates more than once per minute using NSSupportsLiveActivitiesFrequentUpdates.
+- Swift 6 / SwiftUI
+- iOS 17.0+
+- ActivityKit + WidgetKit (Live Activities / Dynamic Island)
+- SwiftData for local caching
+- [OpenF1 API](https://openf1.org) — live timing, intervals, weather
+- [Jolpica-F1 API](https://api.jolpi.ca/ergast/f1) — championship standings
 
-Push-to-Start (Advanced): Integration with Apple Push Notification service (APNs) to trigger the activity remotely when a race begins.
+## Architecture
 
-Background Fetching: Use BackgroundTasks to poll for data when the app is not in the foreground.
+Repository pattern with a remote data source (OpenF1 / Jolpica) and a local SwiftData cache. A dedicated `F1Service` actor handles networking with retry logic for race-day traffic.
 
-3. Data Architecture
-Persistence: Use SwiftData to cache driver standings, team colors, and race calendars locally.
-
-Networking: A dedicated F1Service actor to handle API calls with custom retry logic for race-day traffic.
-
-Payload Management: APNs payloads for Live Activities must be under 4KB.
-
-4. Constraints & Error Handling
-Data Stale Logic: If no update is received for 30 seconds, the UI must show a "Stale" indicator (e.g., dimmed text).
-
-Battery Optimization: Logic to reduce update frequency if the device enters "Low Power Mode."
-
+```
 /F1Tracker
-  ├── /App                  (App Delegates, Main Entry)
-  ├── /Domain               (Protocols, Models, ActivityAttributes)
-  ├── /Data                 (SwiftData Containers, API Services, Repository)
-  ├── /Features             (SwiftUI Views, ViewModels)
-  │    ├── /Dashboard       (Main App Screen)
-  │    └── /LiveTracking    (Live Activity Logic)
-  ├── /WidgetExtension      (The actual Widget/Island UI code)
-  │    ├── F1WidgetEntry.swift
-  │    └── /Views           (Island/LockScreen SwiftUI components)
-  └── /Resources            (Assets, Team Colors, Localizable Strings)
+  ├── /App                  # Entry point, app delegates
+  ├── /Domain               # Models, protocols, ActivityAttributes
+  ├── /Data                 # SwiftData, API services, repositories
+  ├── /Features             # SwiftUI views and view models
+  │    ├── /Dashboard
+  │    └── /LiveTracking
+  ├── /WidgetExtension      # Dynamic Island / Lock Screen UI
+  └── /Resources            # Assets, team colors, localization
+```
 
+## Requirements
 
-  1. For the "Race Hub" (Live Timing)
-Use OpenF1. You will specifically want the intervals and position endpoints.
+- Xcode 16+
+- iOS 17.0+ device or simulator
 
-Endpoint: https://api.openf1.org/v1/intervals?session_key=latest
+## Getting Started
 
-What it gives you: Gap to leader, gap to car ahead, and current lap.
-
-2. For "Championship Standings"
-Use Jolpica-F1.
-
-Endpoint: https://api.jolpi.ca/ergast/f1/current/driverStandings
-
-What it gives you: Points, wins, and current rank for all 20 drivers.
-
-3. For the "Grand Prix Dashboard" (Weather & Track)
-Use OpenF1 for track-side data.
-
-Endpoint: https://api.openf1.org/v1/weather?session_key=latest
-
-What it gives you: Track temperature, air temperature, and rainfall (crucial for "Wet Race" alerts).
-
-To impress a recruiter in 2026, don't just call these APIs directly from your SwiftUI views. Use a Repository Pattern.
-
-Remote Data Source: Fetches from OpenF1 or Jolpica.
-
-Local Data Source (SwiftData): Since F1 data doesn't change every second (except during a race), cache the standings and calendar locally. This makes your app feel "instant" when opened.
-
-The Repository: Logic that decides: "Do I have fresh data in the database? If not, go to the API."
-
-💡 Pro-Tip for 2026: The "Rate Limit" Trap
-Most F1 APIs (especially free ones) have rate limits (e.g., 200 requests/hour).
-
-Junior Approach: Call the API every 2 seconds. (Result: Your API key gets banned).
-
-Senior Approach: Implement a Polling Manager that only increases frequency when a "Race is Live" flag is detected, and uses WebSockets or Background Tasks to save battery.
+1. Clone the repo
+2. Open `F1 Tracker.xcodeproj` in Xcode
+3. Select your target device and run
