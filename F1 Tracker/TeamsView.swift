@@ -123,6 +123,7 @@ struct TeamsView: View {
 
             VStack(spacing: 0) {
                 header
+                staticDataBanner
                 filterTabs
                 teamsList
             }
@@ -204,6 +205,18 @@ struct TeamsView: View {
             .padding(.horizontal, 12)
             .padding(.bottom, 100)
         }
+    }
+
+    private var staticDataBanner: some View {
+        Text("STATIC TEAM GUIDE • NOT LIVE API DATA")
+            .font(.system(size: 11, weight: .bold))
+            .tracking(1)
+            .foregroundColor(.black)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(teamsOrange)
+            .clipShape(Capsule())
+            .padding(.bottom, 14)
     }
 }
 
