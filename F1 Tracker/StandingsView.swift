@@ -36,42 +36,84 @@ struct ConstructorStanding: Identifiable {
     let isNewEntry: Bool
 }
 
-// MARK: - Hardcoded 2026 Data
-
-private let driverStandings: [DriverStanding] = [
-    DriverStanding(position: 1,  name: "Lewis Hamilton",    team: "Ferrari",          teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), points: 254, trendDirection: .up,   trendMagnitude: .big,   imageName: nil),
-    DriverStanding(position: 2,  name: "Charles Leclerc",   team: "Ferrari",          teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), points: 228, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
-    DriverStanding(position: 3,  name: "Max Verstappen",    team: "Red Bull-Ford",    teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), points: 221, trendDirection: .down, trendMagnitude: .big,   imageName: nil),
-    DriverStanding(position: 4,  name: "George Russell",    team: "Mercedes-AMG",     teamColor: Color(red: 0.0,  green: 0.78, blue: 0.70), points: 209, trendDirection: .same, trendMagnitude: .none,  imageName: nil),
-    DriverStanding(position: 5,  name: "Nico Hülkenberg",   team: "Audi F1 Team",     teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), points: 138, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
-    DriverStanding(position: 6,  name: "Lando Norris",      team: "McLaren",          teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  points: 131, trendDirection: .down, trendMagnitude: .small, imageName: nil),
-    DriverStanding(position: 7,  name: "Carlos Sainz",      team: "Audi F1 Team",     teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), points: 107, trendDirection: .up,   trendMagnitude: .small, imageName: nil),
-    DriverStanding(position: 8,  name: "Fernando Alonso",   team: "Aston Martin",     teamColor: Color(red: 0.0,  green: 0.55, blue: 0.30), points: 103, trendDirection: .same, trendMagnitude: .none,  imageName: nil),
-    DriverStanding(position: 9,  name: "Oscar Piastri",     team: "McLaren",          teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  points: 100, trendDirection: .down, trendMagnitude: .small, imageName: nil),
-    DriverStanding(position: 10, name: "Daniel Ricciardo",  team: "Red Bull-Ford",    teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), points: 194, trendDirection: .down, trendMagnitude: .big,   imageName: nil),
-]
-
-private let constructorStandings: [ConstructorStanding] = [
-    ConstructorStanding(position: 1, name: "Ferrari",          drivers: "Hamilton / Leclerc",    points: 482, teamColor: Color(red: 0.85, green: 0.07, blue: 0.07), logoSystemName: "shield.fill",           trendDirection: .up,   trendMagnitude: .big,   isNewEntry: false),
-    ConstructorStanding(position: 2, name: "Red Bull-Ford",    drivers: "Verstappen / Ricciardo", points: 415, teamColor: Color(red: 0.18, green: 0.28, blue: 0.78), logoSystemName: "circle.hexagongrid.fill", trendDirection: .down, trendMagnitude: .big,   isNewEntry: false),
-    ConstructorStanding(position: 3, name: "Mercedes-AMG",     drivers: "Russell / Antonelli",   points: 388, teamColor: Color(red: 0.0,  green: 0.78, blue: 0.70), logoSystemName: "star.fill",             trendDirection: .same, trendMagnitude: .none,  isNewEntry: false),
-    ConstructorStanding(position: 4, name: "Audi F1 Team",     drivers: "Hülkenberg / Sainz",    points: 245, teamColor: Color(red: 0.85, green: 0.85, blue: 0.85), logoSystemName: "circle.fill",           trendDirection: .up,   trendMagnitude: .small, isNewEntry: true),
-    ConstructorStanding(position: 5, name: "McLaren",          drivers: "Norris / Piastri",      points: 231, teamColor: Color(red: 1.0,  green: 0.48, blue: 0.0),  logoSystemName: "triangle.fill",         trendDirection: .down, trendMagnitude: .small, isNewEntry: false),
-    ConstructorStanding(position: 6, name: "Aston Martin-Honda", drivers: "Alonso / Stroll",     points: 198, teamColor: Color(red: 0.0,  green: 0.55, blue: 0.30), logoSystemName: "diamond.fill",          trendDirection: .same, trendMagnitude: .none,  isNewEntry: false),
-]
-
 // MARK: - Accent / brand color
 
 private let f1Orange = Color(red: 1.0, green: 0.38, blue: 0.0)
 private let bgColor  = Color(red: 0.07, green: 0.04, blue: 0.02)
 private let rowColor = Color(red: 0.11, green: 0.07, blue: 0.04)
 
+// MARK: - Team color / logo helpers (keyed by Jolpica constructorId)
+
+private func f1TeamColor(for teamId: String) -> Color {
+    switch teamId {
+    case "ferrari":       return Color(red: 0.85, green: 0.07, blue: 0.07)
+    case "red_bull":      return Color(red: 0.18, green: 0.28, blue: 0.78)
+    case "mercedes":      return Color(red: 0.0,  green: 0.78, blue: 0.70)
+    case "mclaren":       return Color(red: 1.0,  green: 0.48, blue: 0.0)
+    case "aston_martin":  return Color(red: 0.0,  green: 0.55, blue: 0.30)
+    case "alpine":        return Color(red: 0.07, green: 0.38, blue: 0.82)
+    case "williams":      return Color(red: 0.0,  green: 0.53, blue: 0.82)
+    case "haas":          return Color(red: 0.82, green: 0.10, blue: 0.10)
+    case "rb", "alphatauri": return Color(red: 0.28, green: 0.42, blue: 0.82)
+    case "kick_sauber", "sauber": return Color(red: 0.0, green: 0.72, blue: 0.30)
+    case "audi":          return Color(red: 0.85, green: 0.85, blue: 0.85)
+    default:              return Color(white: 0.50)
+    }
+}
+
+private func f1TeamLogo(for teamId: String) -> String {
+    switch teamId {
+    case "ferrari":      return "shield.fill"
+    case "red_bull":     return "circle.hexagongrid.fill"
+    case "mercedes":     return "star.fill"
+    case "mclaren":      return "triangle.fill"
+    case "aston_martin": return "diamond.fill"
+    default:             return "circle.fill"
+    }
+}
+
 // MARK: - Main Standings View
 
 struct StandingsView: View {
     @State private var selectedTab: StandingsTab = .constructors
+    @State private var viewModel: StandingsViewModel
+
+    init(repo: any F1RepositoryProtocol) {
+        _viewModel = State(initialValue: StandingsViewModel(repo: repo))
+    }
 
     enum StandingsTab { case drivers, constructors }
+
+    private var displayDriverStandings: [DriverStanding] {
+        viewModel.driverStandings.map { standing in
+            DriverStanding(
+                position:       standing.position,
+                name:           standing.fullName,
+                team:           standing.teamName,
+                teamColor:      f1TeamColor(for: standing.teamId),
+                points:         Int(standing.points),
+                trendDirection: .same,
+                trendMagnitude: .none,
+                imageName:      nil
+            )
+        }
+    }
+
+    private var displayConstructorStandings: [ConstructorStanding] {
+        viewModel.constructorStandings.map { standing in
+            ConstructorStanding(
+                position:       standing.position,
+                name:           standing.name,
+                drivers:        "—",
+                points:         Int(standing.points),
+                teamColor:      f1TeamColor(for: standing.id),
+                logoSystemName: f1TeamLogo(for: standing.id),
+                trendDirection: .same,
+                trendMagnitude: .none,
+                isNewEntry:     false
+            )
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -81,11 +123,27 @@ struct StandingsView: View {
                 header
                 tabToggle
                 subHeader
-                if selectedTab == .drivers {
-                    DriversStandingList()
+                if isShowingEmptyState {
+                    standingsEmptyState
+                } else if selectedTab == .drivers {
+                    DriversStandingList(drivers: displayDriverStandings)
                 } else {
-                    ConstructorsStandingList()
+                    ConstructorsStandingList(constructors: displayConstructorStandings)
                 }
+            }
+        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.refresh() }
+        .overlay(alignment: .bottom) {
+            if let error = viewModel.error {
+                Text(error)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.red.opacity(0.85))
+                    .clipShape(Capsule())
+                    .padding(.bottom, 110)
             }
         }
     }
@@ -102,11 +160,11 @@ struct StandingsView: View {
             Spacer()
 
             VStack(spacing: 2) {
-                Text("CHAMPIONSHIP 2026")
+                Text("CHAMPIONSHIP")
                     .font(.system(size: 17, weight: .black, design: .default))
                     .italic()
                     .foregroundColor(.white)
-                Text("SEASON STANDINGS")
+                Text("LIVE API STANDINGS")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(2)
                     .foregroundColor(f1Orange)
@@ -173,11 +231,11 @@ struct StandingsView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 1) {
-                Text("ROUND")
+                Text("SOURCE")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1)
                     .foregroundColor(f1Orange)
-                Text("18/24")
+                Text("JOLPICA")
                     .font(.system(size: 14, weight: .black))
                     .foregroundColor(f1Orange)
             }
@@ -185,15 +243,35 @@ struct StandingsView: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 14)
     }
+
+    private var isShowingEmptyState: Bool {
+        selectedTab == .drivers ? displayDriverStandings.isEmpty : displayConstructorStandings.isEmpty
+    }
+
+    private var standingsEmptyState: some View {
+        VStack(spacing: 12) {
+            Text(viewModel.isLoading ? "Loading standings..." : "No standings data available.")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+            Text("This screen no longer falls back to sample championship tables.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(white: 0.6))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
 }
 
 // MARK: - Constructors List
 
 struct ConstructorsStandingList: View {
+    let constructors: [ConstructorStanding]
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(constructorStandings) { item in
+                ForEach(constructors) { item in
                     ConstructorRow2026(constructor: item)
                 }
             }
@@ -292,10 +370,11 @@ struct ConstructorRow2026: View {
 // MARK: - Drivers List
 
 struct DriversStandingList: View {
+    let drivers: [DriverStanding]
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(driverStandings) { driver in
+                ForEach(drivers) { driver in
                     DriverRow2026(driver: driver)
                 }
             }
@@ -422,5 +501,5 @@ struct TrendIcon: View {
 }
 
 #Preview {
-    StandingsView()
+    StandingsView(repo: AppDependencies.preview.repository)
 }

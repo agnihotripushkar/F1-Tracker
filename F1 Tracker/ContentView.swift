@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    let dependencies: AppDependencies
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
         if hasCompletedOnboarding {
-            SplashScreenView()
+            SplashScreenView(dependencies: dependencies)
         } else {
             OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
         }
@@ -20,5 +21,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(dependencies: .preview)
 }

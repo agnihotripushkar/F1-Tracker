@@ -9,7 +9,7 @@ import Combine
 // MARK: - Models
 
 struct ScheduleSession: Identifiable {
-    let id = UUID()
+    let id: String
     let day: String
     let date: String
     let name: String
@@ -18,25 +18,6 @@ struct ScheduleSession: Identifiable {
 }
 
 enum SessionType { case past, upcoming, next, race }
-
-// MARK: - Hardcoded data
-
-private let scheduleItems: [ScheduleSession] = [
-    ScheduleSession(day: "FRIDAY",   date: "MAR 22", name: "Practice 1", time: "18:30", type: .past),
-    ScheduleSession(day: "FRIDAY",   date: "MAR 22", name: "Practice 2", time: "22:00", type: .past),
-    ScheduleSession(day: "SATURDAY", date: "MAR 23", name: "Practice 3", time: "18:30", type: .past),
-    ScheduleSession(day: "SATURDAY", date: "MAR 23", name: "Qualifying",  time: "22:00", type: .next),
-    ScheduleSession(day: "SUNDAY",   date: "MAR 24", name: "Race Day",    time: "21:00", type: .race),
-]
-
-// Target: Qualifying on Saturday Mar 23 2026 22:00 UTC
-private let qualifyingDate: Date = {
-    var c = DateComponents()
-    c.year = 2026; c.month = 3; c.day = 23
-    c.hour = 22; c.minute = 0; c.second = 0
-    c.timeZone = TimeZone(identifier: "UTC")
-    return Calendar.current.date(from: c) ?? Date().addingTimeInterval(200_000)
-}()
 
 private let homeBg   = Color(red: 0.09, green: 0.09, blue: 0.09)
 private let cardBg   = Color(red: 0.13, green: 0.13, blue: 0.13)
@@ -47,17 +28,40 @@ private let redF1    = Color(red: 0.95, green: 0.10, blue: 0.10)
 // MARK: - HomeView
 
 struct HomeView: View {
-    @State private var timeRemaining: TimeInterval = max(qualifyingDate.timeIntervalSinceNow, 0)
+    @State private var viewModel: HomeViewModel
+    @State private var timeRemaining: TimeInterval = 0
     @State private var colonVisible = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    init(repo: any F1RepositoryProtocol) {
+        _viewModel = State(initialValue: HomeViewModel(repo: repo))
+    }
+
+    private var nextSessionLabel: String {
+        viewModel.nextSession.map { "NEXT SESSION: \($0.name.uppercased())" }
+            ?? "NEXT SESSION UNAVAILABLE"
+    }
 
     private var days:    Int { Int(timeRemaining) / 86400 }
     private var hours:   Int { (Int(timeRemaining) % 86400) / 3600 }
     private var minutes: Int { (Int(timeRemaining) % 3600) / 60 }
 
+    private var scheduleItems: [ScheduleSession] {
+        guard let race = viewModel.nextRace else { return [] }
+        return race.allSessions.map { session in
+            ScheduleSession(
+                id: "\(race.id)-\(session.name)-\(session.date.timeIntervalSince1970)",
+                day: session.date.formatted(.dateTime.weekday(.wide)).uppercased(),
+                date: session.date.formatted(.dateTime.month(.abbreviated).day()),
+                name: session.name,
+                time: session.date.formatted(.dateTime.hour().minute()),
+                type: sessionType(for: session.date, isRace: session.isRace)
+            )
+        }
+    }
+
     var body: some View {
         ZStack {
-            // Subtle dot-grid background
             homeBg.ignoresSafeArea()
             DotGridBackground().ignoresSafeArea()
 
@@ -74,9 +78,13 @@ struct HomeView: View {
                 .padding(.horizontal, 16)
             }
         }
+        .task { await viewModel.load() }
         .onReceive(timer) { _ in
-            timeRemaining = max(qualifyingDate.timeIntervalSinceNow, 0)
+            timeRemaining = max(viewModel.nextSession?.date.timeIntervalSinceNow ?? 0, 0)
             withAnimation(.easeInOut(duration: 0.3)) { colonVisible.toggle() }
+        }
+        .onChange(of: viewModel.nextSession?.date) { _, newDate in
+            timeRemaining = max(newDate?.timeIntervalSinceNow ?? 0, 0)
         }
     }
 
@@ -84,7 +92,7 @@ struct HomeView: View {
 
     private var countdownSection: some View {
         VStack(spacing: 8) {
-            Text("NEXT SESSION: QUALIFYING")
+            Text(nextSessionLabel)
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .tracking(2)
                 .foregroundColor(Color(white: 0.45))
@@ -135,17 +143,17 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("ALBERT PARK")
+                    Text(viewModel.nextRace?.circuitName.uppercased() ?? "TRACK DATA UNAVAILABLE")
                         .font(.system(size: 26, weight: .black))
                         .italic()
                         .foregroundColor(.white)
-                    Text("MELBOURNE, AUSTRALIA")
+                    Text(trackLocationText)
                         .font(.system(size: 12, weight: .bold))
                         .tracking(1)
                         .foregroundColor(cyanF1)
                 }
                 Spacer()
-                Text("ROUND 3")
+                Text(viewModel.nextRace.map { "ROUND \($0.id)" } ?? "NO DATA")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Color(white: 0.75))
                     .padding(.horizontal, 14)
@@ -179,11 +187,18 @@ struct HomeView: View {
 
             // Stats row
             HStack(spacing: 8) {
-                trackStat(label: "LAP RECORD", value: "1:20.235")
-                trackStat(label: "TURNS",      value: "14")
-                trackStat(label: "DRS ZONES",  value: "4")
+                trackStat(label: "LAP RECORD", value: "N/A")
+                trackStat(label: "TURNS",      value: "N/A")
+                trackStat(label: "DRS ZONES",  value: "N/A")
             }
             .padding([.horizontal, .bottom], 14)
+
+            Text("TRACK OUTLINE IS ILLUSTRATIVE AND NOT API-SOURCED")
+                .font(.system(size: 10, weight: .bold))
+                .tracking(1)
+                .foregroundColor(Color(white: 0.5))
+                .padding(.horizontal, 18)
+                .padding(.bottom, 16)
         }
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -211,8 +226,18 @@ struct HomeView: View {
 
     private var weatherRow: some View {
         HStack(spacing: 12) {
-            weatherCard(label: "AIR TEMP",   value: "24°C", icon: "sun.max.fill",   iconColor: cyanF1)
-            weatherCard(label: "TRACK TEMP", value: "38°C", icon: "thermometer.medium", iconColor: redF1)
+            weatherCard(
+                label: "AIR TEMP",
+                value: viewModel.weather?.formattedAirTemp   ?? "—",
+                icon: viewModel.weather?.isWet == true ? "cloud.rain.fill" : "sun.max.fill",
+                iconColor: cyanF1
+            )
+            weatherCard(
+                label: "TRACK TEMP",
+                value: viewModel.weather?.formattedTrackTemp ?? "—",
+                icon: "thermometer.medium",
+                iconColor: redF1
+            )
         }
     }
 
@@ -250,7 +275,7 @@ struct HomeView: View {
                     .italic()
                     .foregroundColor(.white)
                 Spacer()
-                Text("PDT (Fullerton, CA)")
+                Text(timezoneLabel)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color(white: 0.55))
                     .padding(.horizontal, 10)
@@ -264,8 +289,17 @@ struct HomeView: View {
 
             // Timeline
             VStack(spacing: 0) {
-                ForEach(Array(scheduleItems.enumerated()), id: \.element.id) { idx, session in
-                    ScheduleRow(session: session, isLast: idx == scheduleItems.count - 1)
+                if scheduleItems.isEmpty {
+                    Text(viewModel.isLoading ? "Loading schedule..." : "Weekend schedule unavailable.")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(white: 0.55))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 18)
+                        .padding(.bottom, 18)
+                } else {
+                    ForEach(Array(scheduleItems.enumerated()), id: \.element.id) { idx, session in
+                        ScheduleRow(session: session, isLast: idx == scheduleItems.count - 1)
+                    }
                 }
             }
             .padding(.bottom, 10)
@@ -302,6 +336,23 @@ struct HomeView: View {
             .background(.white)
             .clipShape(RoundedRectangle(cornerRadius: 18))
         }
+    }
+
+    private var trackLocationText: String {
+        guard let race = viewModel.nextRace else { return "LIVE LOCATION UNAVAILABLE" }
+        return "\(race.locality.uppercased()), \(race.country.uppercased())"
+    }
+
+    private func sessionType(for date: Date, isRace: Bool) -> SessionType {
+        if isRace { return .race }
+        if Calendar.current.isDate(date, equalTo: viewModel.nextSession?.date ?? .distantPast, toGranularity: .minute) {
+            return .next
+        }
+        return date < .now ? .past : .upcoming
+    }
+
+    private var timezoneLabel: String {
+        TimeZone.current.identifier.replacingOccurrences(of: "_", with: " ").uppercased()
     }
 }
 
@@ -458,5 +509,5 @@ struct DotGridBackground: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(repo: AppDependencies.preview.repository)
 }

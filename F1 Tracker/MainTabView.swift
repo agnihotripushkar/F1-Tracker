@@ -30,6 +30,7 @@ enum Tab: Int, CaseIterable {
 }
 
 struct MainTabView: View {
+    let dependencies: AppDependencies
     @State private var selectedTab: Tab = .standings
 
     var body: some View {
@@ -38,11 +39,11 @@ struct MainTabView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    HomeView()
+                    HomeView(repo: dependencies.repository)
                 case .racing:
-                    RacingView()
+                    RacingView(repo: dependencies.repository)
                 case .standings:
-                    StandingsView()
+                    StandingsView(repo: dependencies.repository)
                 case .teams:
                     TeamsView()
                 case .news:
@@ -94,5 +95,5 @@ struct BottomNavBar: View {
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(dependencies: .preview)
 }
