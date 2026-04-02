@@ -47,10 +47,14 @@ private let redF1    = Color(red: 0.95, green: 0.10, blue: 0.10)
 // MARK: - HomeView
 
 struct HomeView: View {
-    @State private var viewModel    = HomeViewModel()
+    @State private var viewModel: HomeViewModel
     @State private var timeRemaining: TimeInterval = max(qualifyingDate.timeIntervalSinceNow, 0)
     @State private var colonVisible = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    init(repo: any F1RepositoryProtocol) {
+        _viewModel = State(initialValue: HomeViewModel(repo: repo))
+    }
 
     /// Use the live next-session date from the ViewModel when available;
     /// fall back to the hardcoded qualifying date while data is loading.

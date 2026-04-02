@@ -25,8 +25,8 @@ final class RacingViewModel {
     private let repo: any F1RepositoryProtocol
     private var pollingTask: Task<Void, Never>?
 
-    init(repo: (any F1RepositoryProtocol)? = nil) {
-        self.repo = repo ?? F1Repository.shared
+    init(repo: any F1RepositoryProtocol) {
+        self.repo = repo
     }
 
     // MARK: - Polling control

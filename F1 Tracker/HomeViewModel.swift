@@ -21,8 +21,8 @@ final class HomeViewModel {
 
     private let repo: any F1RepositoryProtocol
 
-    init(repo: (any F1RepositoryProtocol)? = nil) {
-        self.repo = repo ?? F1Repository.shared
+    init(repo: any F1RepositoryProtocol) {
+        self.repo = repo
     }
 
     // MARK: - Intents

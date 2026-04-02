@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct SplashScreenView: View {
+    let dependencies: AppDependencies
     @State private var animatingDots = false
     @State private var showMainApp = false
 
     var body: some View {
         if showMainApp {
-            MainTabView()
+            MainTabView(dependencies: dependencies)
         } else {
             ZStack {
                 // Background gradient
@@ -223,5 +224,5 @@ struct LoadingDots: View {
 }
 
 #Preview {
-    SplashScreenView()
+    SplashScreenView(dependencies: .preview)
 }

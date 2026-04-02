@@ -11,20 +11,22 @@ import SwiftData
 
 @MainActor
 final class F1Repository: F1RepositoryProtocol {
-
-    static let shared = F1Repository()
-
-    private var modelContext: ModelContext?
+    private let modelContext: ModelContext
+    private let jolpicaService: any JolpicaServicing
+    private let openF1Service: any OpenF1Servicing
 
     private let standingsTTL: TimeInterval = 300     // 5 min
     private let scheduleTTL:  TimeInterval = 3_600   // 1 hr
     private let weatherTTL:   TimeInterval = 30      // 30 sec
 
-    private init() {}
-
-    /// Call once at app startup before any data access.
-    func configure(with context: ModelContext) {
-        self.modelContext = context
+    init(
+        modelContext: ModelContext,
+        jolpicaService: any JolpicaServicing = JolpicaService(),
+        openF1Service: any OpenF1Servicing = OpenF1Service()
+    ) {
+        self.modelContext = modelContext
+        self.jolpicaService = jolpicaService
+        self.openF1Service = openF1Service
     }
 
     // MARK: - Driver Standings
@@ -37,8 +39,7 @@ final class F1Repository: F1RepositoryProtocol {
 
     @discardableResult
     func refreshDriverStandings() async throws -> [F1DriverStanding] {
-        guard let ctx = modelContext else { return [] }
-        let remote = try await JolpicaService.shared.fetchDriverStandings()
+        let remote = try await jolpicaService.fetchDriverStandings()
         try ctx.delete(model: CachedDriverStanding.self)
 
         let models: [CachedDriverStanding] = remote.compactMap { dto in
@@ -72,8 +73,7 @@ final class F1Repository: F1RepositoryProtocol {
 
     @discardableResult
     func refreshConstructorStandings() async throws -> [F1ConstructorStanding] {
-        guard let ctx = modelContext else { return [] }
-        let remote = try await JolpicaService.shared.fetchConstructorStandings()
+        let remote = try await jolpicaService.fetchConstructorStandings()
         try ctx.delete(model: CachedConstructorStanding.self)
 
         let models: [CachedConstructorStanding] = remote.compactMap { dto in
@@ -102,8 +102,7 @@ final class F1Repository: F1RepositoryProtocol {
 
     @discardableResult
     func refreshRaceSchedule() async throws -> [F1Race] {
-        guard let ctx = modelContext else { return [] }
-        let remote = try await JolpicaService.shared.fetchRaceSchedule()
+        let remote = try await jolpicaService.fetchRaceSchedule()
         try ctx.delete(model: CachedRace.self)
 
         let fmt = ISO8601DateFormatter()
@@ -140,8 +139,7 @@ final class F1Repository: F1RepositoryProtocol {
 
     @discardableResult
     func refreshWeather() async throws -> F1Weather? {
-        guard let ctx = modelContext,
-              let dto = try await OpenF1Service.shared.fetchLatestWeather() else { return nil }
+        guard let dto = try await openF1Service.fetchLatestWeather() else { return nil }
         try ctx.delete(model: CachedWeather.self)
         let m = CachedWeather(
             sessionKey:       dto.sessionKey,
@@ -159,9 +157,9 @@ final class F1Repository: F1RepositoryProtocol {
     // MARK: - Live Timing (stateless — no SwiftData cache)
 
     func fetchLiveTiming() async throws -> [F1TimingEntry] {
-        async let positions = OpenF1Service.shared.fetchLatestPositions()
-        async let intervals = OpenF1Service.shared.fetchIntervals()
-        async let drivers   = OpenF1Service.shared.fetchDrivers()
+        async let positions = openF1Service.fetchLatestPositions()
+        async let intervals = openF1Service.fetchIntervals()
+        async let drivers   = openF1Service.fetchDrivers()
 
         let (posData, intData, drvData) = try await (positions, intervals, drivers)
 
@@ -188,16 +186,16 @@ final class F1Repository: F1RepositoryProtocol {
     // MARK: - Private helpers
 
     private func local<T: PersistentModel>(_ type: T.Type) -> [T] {
-        guard let ctx = modelContext else { return [] }
         return (try? ctx.fetch(FetchDescriptor<T>())) ?? []
     }
 
     private func local<T: PersistentModel, V: Comparable>(
         _ type: T.Type, sortBy keyPath: KeyPath<T, V>
     ) -> [T] {
-        guard let ctx = modelContext else { return [] }
         return (try? ctx.fetch(FetchDescriptor<T>(sortBy: [SortDescriptor(keyPath)]))) ?? []
     }
+
+    private var ctx: ModelContext { modelContext }
 
     private func fresh(_ date: Date?, ttl: TimeInterval) -> Bool {
         guard let date else { return false }

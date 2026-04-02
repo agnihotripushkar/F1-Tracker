@@ -8,26 +8,28 @@
 import SwiftUI
 import SwiftData
 
+@MainActor
 @main
 struct F1_TrackerApp: App {
-    let container: ModelContainer = {
+    private let container: ModelContainer
+    private let dependencies: AppDependencies
+
+    init() {
         let schema = Schema([
             CachedDriverStanding.self,
             CachedConstructorStanding.self,
             CachedRace.self,
             CachedWeather.self
         ])
-        return try! ModelContainer(for: schema)
-    }()
+        let container = try! ModelContainer(for: schema)
+        self.container = container
+        self.dependencies = .live(modelContext: container.mainContext)
+    }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(dependencies: dependencies)
                 .modelContainer(container)
-                .task {
-                    // Wire the repository to the main SwiftData context
-                    F1Repository.shared.configure(with: container.mainContext)
-                }
         }
     }
 }

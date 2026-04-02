@@ -3,6 +3,13 @@
 
 import Foundation
 
+protocol OpenF1Servicing: Sendable {
+    func fetchLatestWeather() async throws -> OpenF1WeatherResponse?
+    func fetchIntervals() async throws -> [OpenF1IntervalResponse]
+    func fetchLatestPositions() async throws -> [OpenF1PositionResponse]
+    func fetchDrivers() async throws -> [OpenF1DriverResponse]
+}
+
 // Shared error type for all F1 services
 enum F1ServiceError: LocalizedError {
     case invalidURL
@@ -19,12 +26,10 @@ enum F1ServiceError: LocalizedError {
 }
 
 actor OpenF1Service {
-    static let shared = OpenF1Service()
-
     private let baseURL = "https://api.openf1.org/v1"
     private let session: URLSession
 
-    private init() {
+    init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         config.waitsForConnectivity = true
@@ -73,3 +78,5 @@ actor OpenF1Service {
         return try JSONDecoder().decode([T].self, from: data)
     }
 }
+
+extension OpenF1Service: OpenF1Servicing {}

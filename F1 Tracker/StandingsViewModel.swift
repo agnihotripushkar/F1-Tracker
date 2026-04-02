@@ -16,9 +16,8 @@ final class StandingsViewModel {
 
     private let repo: any F1RepositoryProtocol
 
-    /// Pass nil (default) for the production repository, or inject a mock for tests/previews.
-    init(repo: (any F1RepositoryProtocol)? = nil) {
-        self.repo = repo ?? F1Repository.shared
+    init(repo: any F1RepositoryProtocol) {
+        self.repo = repo
     }
 
     // MARK: - Intents

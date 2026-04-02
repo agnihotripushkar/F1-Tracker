@@ -71,9 +71,13 @@ private let f1Orange    = Color(red: 1.0,  green: 0.38, blue: 0.0)
 // MARK: - Main View
 
 struct RacingView: View {
-    @State private var viewModel    = RacingViewModel()
+    @State private var viewModel: RacingViewModel
     @State private var activeSubTab: RacingSubTab = .leaderboard
     @State private var greenPulse = false
+
+    init(repo: any F1RepositoryProtocol) {
+        _viewModel = State(initialValue: RacingViewModel(repo: repo))
+    }
 
     enum RacingSubTab: String, CaseIterable {
         case leaderboard = "LEADERBOARD"

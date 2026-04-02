@@ -100,7 +100,11 @@ private func f1TeamLogo(for teamId: String) -> String {
 
 struct StandingsView: View {
     @State private var selectedTab: StandingsTab = .constructors
-    @State private var viewModel = StandingsViewModel()
+    @State private var viewModel: StandingsViewModel
+
+    init(repo: any F1RepositoryProtocol) {
+        _viewModel = State(initialValue: StandingsViewModel(repo: repo))
+    }
 
     enum StandingsTab { case drivers, constructors }
 

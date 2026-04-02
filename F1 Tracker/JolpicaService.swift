@@ -3,13 +3,17 @@
 
 import Foundation
 
-actor JolpicaService {
-    static let shared = JolpicaService()
+protocol JolpicaServicing: Sendable {
+    func fetchDriverStandings() async throws -> [JolpicaDriverStandingsResponse.DriverStanding]
+    func fetchConstructorStandings() async throws -> [JolpicaConstructorStandingsResponse.ConstructorStanding]
+    func fetchRaceSchedule() async throws -> [JolpicaScheduleResponse.Race]
+}
 
+actor JolpicaService {
     private let baseURL = "https://api.jolpi.ca/ergast/f1"
     private let session: URLSession
 
-    private init() {
+    init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         config.waitsForConnectivity = true
@@ -52,3 +56,5 @@ actor JolpicaService {
         return try JSONDecoder().decode(T.self, from: data)
     }
 }
+
+extension JolpicaService: JolpicaServicing {}
