@@ -1,0 +1,18 @@
+// Color+Hex.swift
+// Converts a 6-character hex string (e.g. "E8002D") into a SwiftUI Color.
+// Used by RacingView to display team colors returned by the OpenF1 API.
+
+import SwiftUI
+
+extension Color {
+    /// Initialise from a 6-character hex string (with or without leading '#').
+    init(hex: String) {
+        let cleaned = hex.trimmingCharacters(in: .init(charactersIn: "#"))
+        var rgb: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&rgb)
+        let r = Double((rgb >> 16) & 0xFF) / 255
+        let g = Double((rgb >>  8) & 0xFF) / 255
+        let b = Double( rgb        & 0xFF) / 255
+        self.init(red: r, green: g, blue: b)
+    }
+}

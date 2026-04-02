@@ -71,6 +71,7 @@ private let f1Orange    = Color(red: 1.0,  green: 0.38, blue: 0.0)
 // MARK: - Main View
 
 struct RacingView: View {
+    @State private var viewModel    = RacingViewModel()
     @State private var activeSubTab: RacingSubTab = .leaderboard
     @State private var greenPulse = false
 
@@ -79,6 +80,27 @@ struct RacingView: View {
         case telemetry   = "TELEMETRY"
         case radio       = "RADIO"
         case strategy    = "STRATEGY"
+    }
+
+    /// Map live F1TimingEntry → LiveDriver for the existing row components.
+    /// Falls back to hardcoded data when no live session is active.
+    private var displayDrivers: [LiveDriver] {
+        guard !viewModel.timingEntries.isEmpty else { return liveDrivers }
+        return viewModel.timingEntries.map { entry in
+            LiveDriver(
+                position:  entry.position,
+                lastName:  entry.name.split(separator: " ").last.map(String.init) ?? entry.acronym,
+                abbrev:    entry.acronym,
+                team:      entry.teamName.uppercased(),
+                teamShort: entry.teamName.uppercased(),
+                teamColor: Color(hex: entry.teamColorHex),
+                interval:  entry.isLeader ? "LEADER" : entry.gapToLeader,
+                isLeader:  entry.isLeader,
+                tire:      .hard,   // tire data requires a separate OpenF1 endpoint
+                tireLaps:  0,
+                pits:      0
+            )
+        }
     }
 
     var body: some View {
@@ -91,6 +113,21 @@ struct RacingView: View {
                 subTabBar
                 columnHeaders
                 leaderboardList
+            }
+        }
+        .onAppear  { viewModel.startPolling() }
+        .onDisappear { viewModel.stopPolling() }
+        .overlay(alignment: .top) {
+            if viewModel.isDataStale {
+                Text("DATA STALE")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(Color.yellow)
+                    .clipShape(Capsule())
+                    .padding(.top, 56)
             }
         }
     }
@@ -234,7 +271,7 @@ struct RacingView: View {
     private var leaderboardList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
-                ForEach(liveDrivers) { driver in
+                ForEach(displayDrivers) { driver in
                     if driver.position <= 10 {
                         DetailedDriverRow(driver: driver)
                     } else {

@@ -66,12 +66,77 @@ private let f1Orange = Color(red: 1.0, green: 0.38, blue: 0.0)
 private let bgColor  = Color(red: 0.07, green: 0.04, blue: 0.02)
 private let rowColor = Color(red: 0.11, green: 0.07, blue: 0.04)
 
+// MARK: - Team color / logo helpers (keyed by Jolpica constructorId)
+
+private func f1TeamColor(for teamId: String) -> Color {
+    switch teamId {
+    case "ferrari":       return Color(red: 0.85, green: 0.07, blue: 0.07)
+    case "red_bull":      return Color(red: 0.18, green: 0.28, blue: 0.78)
+    case "mercedes":      return Color(red: 0.0,  green: 0.78, blue: 0.70)
+    case "mclaren":       return Color(red: 1.0,  green: 0.48, blue: 0.0)
+    case "aston_martin":  return Color(red: 0.0,  green: 0.55, blue: 0.30)
+    case "alpine":        return Color(red: 0.07, green: 0.38, blue: 0.82)
+    case "williams":      return Color(red: 0.0,  green: 0.53, blue: 0.82)
+    case "haas":          return Color(red: 0.82, green: 0.10, blue: 0.10)
+    case "rb", "alphatauri": return Color(red: 0.28, green: 0.42, blue: 0.82)
+    case "kick_sauber", "sauber": return Color(red: 0.0, green: 0.72, blue: 0.30)
+    case "audi":          return Color(red: 0.85, green: 0.85, blue: 0.85)
+    default:              return Color(white: 0.50)
+    }
+}
+
+private func f1TeamLogo(for teamId: String) -> String {
+    switch teamId {
+    case "ferrari":      return "shield.fill"
+    case "red_bull":     return "circle.hexagongrid.fill"
+    case "mercedes":     return "star.fill"
+    case "mclaren":      return "triangle.fill"
+    case "aston_martin": return "diamond.fill"
+    default:             return "circle.fill"
+    }
+}
+
 // MARK: - Main Standings View
 
 struct StandingsView: View {
     @State private var selectedTab: StandingsTab = .constructors
+    @State private var viewModel = StandingsViewModel()
 
     enum StandingsTab { case drivers, constructors }
+
+    // Map domain models → view-display structs; fall back to hardcoded sample data.
+    private var displayDriverStandings: [DriverStanding] {
+        guard !viewModel.driverStandings.isEmpty else { return driverStandings }
+        return viewModel.driverStandings.map { standing in
+            DriverStanding(
+                position:       standing.position,
+                name:           standing.fullName,
+                team:           standing.teamName,
+                teamColor:      f1TeamColor(for: standing.teamId),
+                points:         Int(standing.points),
+                trendDirection: .same,
+                trendMagnitude: .none,
+                imageName:      nil
+            )
+        }
+    }
+
+    private var displayConstructorStandings: [ConstructorStanding] {
+        guard !viewModel.constructorStandings.isEmpty else { return constructorStandings }
+        return viewModel.constructorStandings.map { standing in
+            ConstructorStanding(
+                position:       standing.position,
+                name:           standing.name,
+                drivers:        "—",
+                points:         Int(standing.points),
+                teamColor:      f1TeamColor(for: standing.id),
+                logoSystemName: f1TeamLogo(for: standing.id),
+                trendDirection: .same,
+                trendMagnitude: .none,
+                isNewEntry:     false
+            )
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -82,10 +147,24 @@ struct StandingsView: View {
                 tabToggle
                 subHeader
                 if selectedTab == .drivers {
-                    DriversStandingList()
+                    DriversStandingList(drivers: displayDriverStandings)
                 } else {
-                    ConstructorsStandingList()
+                    ConstructorsStandingList(constructors: displayConstructorStandings)
                 }
+            }
+        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.refresh() }
+        .overlay(alignment: .bottom) {
+            if let error = viewModel.error {
+                Text(error)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.red.opacity(0.85))
+                    .clipShape(Capsule())
+                    .padding(.bottom, 110)
             }
         }
     }
@@ -190,10 +269,11 @@ struct StandingsView: View {
 // MARK: - Constructors List
 
 struct ConstructorsStandingList: View {
+    let constructors: [ConstructorStanding]
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(constructorStandings) { item in
+                ForEach(constructors) { item in
                     ConstructorRow2026(constructor: item)
                 }
             }
@@ -292,10 +372,11 @@ struct ConstructorRow2026: View {
 // MARK: - Drivers List
 
 struct DriversStandingList: View {
+    let drivers: [DriverStanding]
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(driverStandings) { driver in
+                ForEach(drivers) { driver in
                     DriverRow2026(driver: driver)
                 }
             }

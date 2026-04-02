@@ -47,9 +47,21 @@ private let redF1    = Color(red: 0.95, green: 0.10, blue: 0.10)
 // MARK: - HomeView
 
 struct HomeView: View {
+    @State private var viewModel    = HomeViewModel()
     @State private var timeRemaining: TimeInterval = max(qualifyingDate.timeIntervalSinceNow, 0)
     @State private var colonVisible = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    /// Use the live next-session date from the ViewModel when available;
+    /// fall back to the hardcoded qualifying date while data is loading.
+    private var countdownTarget: Date {
+        viewModel.nextSession?.date ?? qualifyingDate
+    }
+
+    private var nextSessionLabel: String {
+        viewModel.nextSession.map { "NEXT SESSION: \($0.name.uppercased())" }
+            ?? "NEXT SESSION: QUALIFYING"
+    }
 
     private var days:    Int { Int(timeRemaining) / 86400 }
     private var hours:   Int { (Int(timeRemaining) % 86400) / 3600 }
@@ -57,7 +69,6 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            // Subtle dot-grid background
             homeBg.ignoresSafeArea()
             DotGridBackground().ignoresSafeArea()
 
@@ -74,9 +85,16 @@ struct HomeView: View {
                 .padding(.horizontal, 16)
             }
         }
+        .task { await viewModel.load() }
         .onReceive(timer) { _ in
-            timeRemaining = max(qualifyingDate.timeIntervalSinceNow, 0)
+            timeRemaining = max(countdownTarget.timeIntervalSinceNow, 0)
             withAnimation(.easeInOut(duration: 0.3)) { colonVisible.toggle() }
+        }
+        .onChange(of: viewModel.nextSession?.date) { _, newDate in
+            // Re-sync immediately whenever the live date arrives
+            if let newDate {
+                timeRemaining = max(newDate.timeIntervalSinceNow, 0)
+            }
         }
     }
 
@@ -84,7 +102,7 @@ struct HomeView: View {
 
     private var countdownSection: some View {
         VStack(spacing: 8) {
-            Text("NEXT SESSION: QUALIFYING")
+            Text(nextSessionLabel)
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
                 .tracking(2)
                 .foregroundColor(Color(white: 0.45))
@@ -211,8 +229,18 @@ struct HomeView: View {
 
     private var weatherRow: some View {
         HStack(spacing: 12) {
-            weatherCard(label: "AIR TEMP",   value: "24°C", icon: "sun.max.fill",   iconColor: cyanF1)
-            weatherCard(label: "TRACK TEMP", value: "38°C", icon: "thermometer.medium", iconColor: redF1)
+            weatherCard(
+                label: "AIR TEMP",
+                value: viewModel.weather?.formattedAirTemp   ?? "—",
+                icon: viewModel.weather?.isWet == true ? "cloud.rain.fill" : "sun.max.fill",
+                iconColor: cyanF1
+            )
+            weatherCard(
+                label: "TRACK TEMP",
+                value: viewModel.weather?.formattedTrackTemp ?? "—",
+                icon: "thermometer.medium",
+                iconColor: redF1
+            )
         }
     }
 
