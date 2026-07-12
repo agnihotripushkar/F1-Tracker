@@ -110,7 +110,7 @@ final class F1Repository: F1RepositoryProtocol {
             guard let round    = Int(dto.round),
                   let raceDate = parseDate(dto.date, time: dto.time, fmt: fmt) else { return nil }
             let m = CachedRace(
-                round: round, season: 2025,
+                round: round, season: Calendar.current.component(.year, from: raceDate),
                 raceName: dto.raceName,
                 circuitName: dto.circuit.circuitName,
                 country: dto.circuit.location.country,
