@@ -21,7 +21,17 @@ struct F1_TrackerApp: App {
             CachedRace.self,
             CachedWeather.self
         ])
-        let container = try! ModelContainer(for: schema)
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(for: schema)
+        } catch {
+            // Fall back to an in-memory store so a corrupt/incompatible on-disk
+            // cache can't hard-crash the app on launch — worst case we lose
+            // the local cache for this session instead of losing the app.
+            let fallbackConfig = ModelConfiguration(isStoredInMemoryOnly: true)
+            container = (try? ModelContainer(for: schema, configurations: fallbackConfig))
+                ?? { fatalError("Failed to create in-memory ModelContainer fallback: \(error)") }()
+        }
         self.container = container
         self.dependencies = .live(modelContext: container.mainContext)
     }
