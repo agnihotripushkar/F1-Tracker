@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project "F1 Tracker.xcodeproj" \
+            -scheme "F1 Tracker" \
+            -destination "generic/platform=iOS Simulator" \
+            -skipMacroValidation
