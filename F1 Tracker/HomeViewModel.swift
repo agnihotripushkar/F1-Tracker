@@ -11,7 +11,7 @@ final class HomeViewModel {
     var races:    [F1Race]   = []
     var weather:  F1Weather?
     var isLoading = false
-    var error: String?
+    var error: F1LoadError?
 
     /// The next race that hasn't started yet.
     var nextRace: F1Race? { races.first { $0.isUpcoming } }
@@ -36,13 +36,20 @@ final class HomeViewModel {
             async let latestWeather = repo.latestWeather()
             (races, weather) = try await (schedule, latestWeather)
         } catch {
-            self.error = error.localizedDescription
+            handle(error)
         }
         isLoading = false
     }
 
     func refreshWeather() async {
         do { weather = try await repo.refreshWeather() }
-        catch { self.error = error.localizedDescription }
+        catch { handle(error) }
+    }
+
+    // MARK: - Private
+
+    private func handle(_ error: Error) {
+        guard !(error is CancellationError) else { return }
+        self.error = F1LoadError(error)
     }
 }

@@ -12,7 +12,7 @@ final class StandingsViewModel {
     var driverStandings:      [F1DriverStanding]      = []
     var constructorStandings: [F1ConstructorStanding] = []
     var isLoading = false
-    var error: String?
+    var error: F1LoadError?
 
     private let repo: any F1RepositoryProtocol
 
@@ -31,12 +31,13 @@ final class StandingsViewModel {
             async let constructors = repo.constructorStandings()
             (driverStandings, constructorStandings) = try await (drivers, constructors)
         } catch {
-            self.error = error.localizedDescription
+            handle(error)
         }
         isLoading = false
     }
 
     func refresh() async {
+        guard !isLoading else { return }
         isLoading = true
         error = nil
         do {
@@ -44,8 +45,15 @@ final class StandingsViewModel {
             async let constructors = repo.refreshConstructorStandings()
             (driverStandings, constructorStandings) = try await (drivers, constructors)
         } catch {
-            self.error = error.localizedDescription
+            handle(error)
         }
         isLoading = false
+    }
+
+    // MARK: - Private
+
+    private func handle(_ error: Error) {
+        guard !(error is CancellationError) else { return }
+        self.error = F1LoadError(error)
     }
 }

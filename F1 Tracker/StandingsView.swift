@@ -38,9 +38,11 @@ struct ConstructorStanding: Identifiable {
 
 // MARK: - Accent / brand color
 
-private let f1Orange = Color(red: 1.0, green: 0.38, blue: 0.0)
-private let bgColor  = Color(red: 0.07, green: 0.04, blue: 0.02)
-private let rowColor = Color(red: 0.11, green: 0.07, blue: 0.04)
+enum StandingsTheme {
+    static let accent = Color(red: 1.0, green: 0.38, blue: 0.0)
+    static let background = Color(red: 0.07, green: 0.04, blue: 0.02)
+    static let row = Color(red: 0.11, green: 0.07, blue: 0.04)
+}
 
 // MARK: - Team color / logo helpers (keyed by Jolpica constructorId)
 
@@ -117,7 +119,7 @@ struct StandingsView: View {
 
     var body: some View {
         ZStack {
-            bgColor.ignoresSafeArea()
+            StandingsTheme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 header
@@ -136,14 +138,22 @@ struct StandingsView: View {
         .refreshable { await viewModel.refresh() }
         .overlay(alignment: .bottom) {
             if let error = viewModel.error {
-                Text(error)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.red.opacity(0.85))
-                    .clipShape(Capsule())
-                    .padding(.bottom, 110)
+                HStack(spacing: 10) {
+                    Text(error.message)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                    if error.isRetryable {
+                        Button("RETRY") { Task { await viewModel.refresh() } }
+                            .font(.system(size: 12, weight: .black))
+                            .foregroundColor(.white)
+                            .underline()
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.red.opacity(0.85))
+                .clipShape(Capsule())
+                .padding(.bottom, 110)
             }
         }
     }
@@ -167,7 +177,7 @@ struct StandingsView: View {
                 Text("LIVE API STANDINGS")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(2)
-                    .foregroundColor(f1Orange)
+                    .foregroundColor(StandingsTheme.accent)
             }
 
             Spacer()
@@ -209,7 +219,7 @@ struct StandingsView: View {
                 .padding(.vertical, 14)
                 .background(
                     isActive
-                    ? f1Orange.clipShape(RoundedRectangle(cornerRadius: 12))
+                    ? StandingsTheme.accent.clipShape(RoundedRectangle(cornerRadius: 12))
                     : Color.clear.clipShape(RoundedRectangle(cornerRadius: 12))
                 )
         }
@@ -234,10 +244,10 @@ struct StandingsView: View {
                 Text("SOURCE")
                     .font(.system(size: 10, weight: .bold))
                     .tracking(1)
-                    .foregroundColor(f1Orange)
+                    .foregroundColor(StandingsTheme.accent)
                 Text("JOLPICA")
                     .font(.system(size: 14, weight: .black))
-                    .foregroundColor(f1Orange)
+                    .foregroundColor(StandingsTheme.accent)
             }
         }
         .padding(.horizontal, 20)
@@ -261,242 +271,6 @@ struct StandingsView: View {
         .padding(.horizontal, 24)
         .padding(.top, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-}
-
-// MARK: - Constructors List
-
-struct ConstructorsStandingList: View {
-    let constructors: [ConstructorStanding]
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 12) {
-                ForEach(constructors) { item in
-                    ConstructorRow2026(constructor: item)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 100)
-        }
-    }
-}
-
-struct ConstructorRow2026: View {
-    let constructor: ConstructorStanding
-
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            HStack(spacing: 0) {
-                // Left color bar
-                Rectangle()
-                    .fill(constructor.teamColor)
-                    .frame(width: 4)
-                    .clipShape(
-                        .rect(
-                            topLeadingRadius: 10,
-                            bottomLeadingRadius: 10
-                        )
-                    )
-
-                HStack(spacing: 14) {
-                    // Position
-                    Text("\(constructor.position)")
-                        .font(.system(size: 32, weight: .black, design: .default))
-                        .italic()
-                        .foregroundColor(.white)
-                        .frame(width: 36, alignment: .center)
-
-                    // Logo
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(red: 0.15, green: 0.10, blue: 0.06))
-                            .frame(width: 64, height: 64)
-                        Image(systemName: constructor.logoSystemName)
-                            .font(.system(size: 26))
-                            .foregroundColor(constructor.teamColor)
-                    }
-
-                    // Name + drivers + trend
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 6) {
-                            Text(constructor.name)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                            TrendIcon(direction: constructor.trendDirection,
-                                      magnitude: constructor.trendMagnitude)
-                        }
-                        Text(constructor.drivers)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(white: 0.50))
-                    }
-
-                    Spacer()
-
-                    // Points
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text("\(constructor.points)")
-                            .font(.system(size: 28, weight: .black, design: .default))
-                            .italic()
-                            .foregroundColor(.white)
-                        Text("POINTS")
-                            .font(.system(size: 9, weight: .bold))
-                            .tracking(0.5)
-                            .foregroundColor(Color(white: 0.45))
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 16)
-            }
-            .background(rowColor)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-
-            // NEW ENTRY badge
-            if constructor.isNewEntry {
-                Text("NEW ENTRY")
-                    .font(.system(size: 9, weight: .black))
-                    .tracking(0.5)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(f1Orange)
-                    .clipShape(Capsule())
-                    .padding(.top, 10)
-                    .padding(.trailing, 14)
-            }
-        }
-    }
-}
-
-// MARK: - Drivers List
-
-struct DriversStandingList: View {
-    let drivers: [DriverStanding]
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 12) {
-                ForEach(drivers) { driver in
-                    DriverRow2026(driver: driver)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 100)
-        }
-    }
-}
-
-struct DriverRow2026: View {
-    let driver: DriverStanding
-
-    var body: some View {
-        HStack(spacing: 0) {
-            // Left color bar
-            Rectangle()
-                .fill(driver.teamColor)
-                .frame(width: 4)
-                .clipShape(
-                    .rect(
-                        topLeadingRadius: 10,
-                        bottomLeadingRadius: 10
-                    )
-                )
-
-            HStack(spacing: 14) {
-                // Position
-                Text("\(driver.position)")
-                    .font(.system(size: 32, weight: .black, design: .default))
-                    .italic()
-                    .foregroundColor(.white)
-                    .frame(width: 36, alignment: .center)
-
-                // Driver avatar placeholder
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(red: 0.15, green: 0.10, blue: 0.06))
-                        .frame(width: 64, height: 64)
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(driver.teamColor.opacity(0.8))
-                }
-
-                // Name, team, trend
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(driver.name)
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                        TrendIcon(direction: driver.trendDirection,
-                                  magnitude: driver.trendMagnitude)
-                    }
-                    Text(driver.team)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color(white: 0.50))
-                }
-
-                Spacer()
-
-                // Points
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text("\(driver.points)")
-                        .font(.system(size: 28, weight: .black, design: .default))
-                        .italic()
-                        .foregroundColor(.white)
-                    Text("POINTS")
-                        .font(.system(size: 9, weight: .bold))
-                        .tracking(0.5)
-                        .foregroundColor(Color(white: 0.45))
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 16)
-        }
-        .background(rowColor)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-// MARK: - Trend Icon
-
-struct TrendIcon: View {
-    let direction: TrendDirection
-    let magnitude: TrendMagnitude
-
-    private var color: Color {
-        switch direction {
-        case .up:   return Color(red: 0.15, green: 0.82, blue: 0.35)
-        case .down: return Color(red: 0.90, green: 0.20, blue: 0.20)
-        case .same: return Color(white: 0.50)
-        }
-    }
-
-    var body: some View {
-        switch direction {
-        case .same:
-            Image(systemName: "minus")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(color)
-        case .up:
-            if magnitude == .big {
-                // Double chevron up
-                Image(systemName: "chevron.up.2")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(color)
-            } else {
-                Image(systemName: "chevron.up")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(color)
-            }
-        case .down:
-            if magnitude == .big {
-                Image(systemName: "chevron.down.2")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(color)
-            } else {
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(color)
-            }
-        }
     }
 }
 

@@ -14,7 +14,7 @@ final class RacingViewModel {
     var isLoading    = false
     var isLive       = false
     var lastUpdated: Date?
-    var error: String?
+    var error: F1LoadError?
 
     /// True when the last successful update was more than 30 seconds ago.
     var isDataStale: Bool {
@@ -58,7 +58,11 @@ final class RacingViewModel {
             isLive        = !timingEntries.isEmpty
             error         = nil
         } catch {
-            self.error = error.localizedDescription
+            guard !(error is CancellationError) else {
+                isLoading = false
+                return
+            }
+            self.error = F1LoadError(error)
         }
         isLoading = false
     }

@@ -38,10 +38,12 @@ struct LiveDriver: Identifiable {
     let pits: Int
 }
 
-private let racingBg    = Color(red: 0.07, green: 0.04, blue: 0.02)
-private let rowBg       = Color(red: 0.11, green: 0.07, blue: 0.03)
-private let rowBgAlt    = Color(red: 0.09, green: 0.055, blue: 0.025)
-private let f1Orange    = Color(red: 1.0,  green: 0.38, blue: 0.0)
+enum RacingTheme {
+    static let background = Color(red: 0.07, green: 0.04, blue: 0.02)
+    static let rowBackground    = Color(red: 0.11, green: 0.07, blue: 0.03)
+    static let rowBackgroundAlt = Color(red: 0.09, green: 0.055, blue: 0.025)
+    static let accent = Color(red: 1.0, green: 0.38, blue: 0.0)
+}
 
 // MARK: - Main View
 
@@ -49,6 +51,8 @@ struct RacingView: View {
     @State private var viewModel: RacingViewModel
     @State private var activeSubTab: RacingSubTab = .leaderboard
     @State private var greenPulse = false
+    @State private var isVisible = false
+    @Environment(\.scenePhase) private var scenePhase
 
     init(repo: any F1RepositoryProtocol) {
         _viewModel = State(initialValue: RacingViewModel(repo: repo))
@@ -82,7 +86,7 @@ struct RacingView: View {
 
     var body: some View {
         ZStack {
-            racingBg.ignoresSafeArea()
+            RacingTheme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 raceHeader
@@ -92,8 +96,23 @@ struct RacingView: View {
                 leaderboardList
             }
         }
-        .onAppear  { viewModel.startPolling() }
-        .onDisappear { viewModel.stopPolling() }
+        .onAppear {
+            isVisible = true
+            viewModel.startPolling()
+        }
+        .onDisappear {
+            isVisible = false
+            viewModel.stopPolling()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Live timing polls every 5s; don't keep hitting the API once the
+            // app is backgrounded.
+            if newPhase == .active {
+                if isVisible { viewModel.startPolling() }
+            } else {
+                viewModel.stopPolling()
+            }
+        }
         .overlay(alignment: .top) {
             if viewModel.isDataStale {
                 Text("DATA STALE")
@@ -115,7 +134,7 @@ struct RacingView: View {
             Button { } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(f1Orange)
+                    .foregroundColor(RacingTheme.accent)
                     .padding(.trailing, 8)
             }
 
@@ -123,7 +142,7 @@ struct RacingView: View {
                 Text("LIVE TIMING")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1)
-                    .foregroundColor(f1Orange)
+                    .foregroundColor(RacingTheme.accent)
                 Text(raceSubtitle)
                     .font(.system(size: 13, weight: .black))
                     .foregroundColor(.white)
@@ -209,11 +228,11 @@ struct RacingView: View {
                         Text(tab.rawValue)
                             .font(.system(size: 12, weight: .bold))
                             .tracking(0.5)
-                            .foregroundColor(isActive ? f1Orange : Color(white: 0.45))
+                            .foregroundColor(isActive ? RacingTheme.accent : Color(white: 0.45))
                             .padding(.vertical, 10)
                             .frame(maxWidth: .infinity)
                         Rectangle()
-                            .fill(isActive ? f1Orange : Color.clear)
+                            .fill(isActive ? RacingTheme.accent : Color.clear)
                             .frame(height: 2)
                     }
                 }
@@ -288,124 +307,13 @@ struct RacingView: View {
     }
 
     private var statusSubtitle: String {
-        if let error = viewModel.error, !error.isEmpty {
-            return error.uppercased()
+        if let error = viewModel.error {
+            return error.message.uppercased()
         }
         if viewModel.isLive {
             return "POSITIONS ARE STREAMING FROM OPENF1"
         }
         return "NO API BACKFILL OR MOCK LEADERBOARD IS SHOWN"
-    }
-}
-
-// MARK: - Detailed row (positions 1–10)
-
-struct DetailedDriverRow: View {
-    let driver: LiveDriver
-
-    var body: some View {
-        HStack(spacing: 0) {
-            // Left orange accent for leader
-            Rectangle()
-                .fill(driver.isLeader ? f1Orange : Color.clear)
-                .frame(width: 3)
-
-            HStack(spacing: 0) {
-                // Position
-                Text("\(driver.position)")
-                    .font(.system(size: 22, weight: .black, design: .default))
-                    .italic()
-                    .foregroundColor(.white)
-                    .frame(width: 36, alignment: .leading)
-
-                // Team color bar + name block
-                HStack(spacing: 8) {
-                    Rectangle()
-                        .fill(driver.teamColor)
-                        .frame(width: 3, height: 36)
-                        .clipShape(Capsule())
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(driver.lastName)
-                            .font(.system(size: 15, weight: .black))
-                            .foregroundColor(.white)
-                        Text(driver.team)
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundColor(Color(white: 0.45))
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                // Interval
-                Text(driver.interval)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(driver.isLeader ? f1Orange : Color(white: 0.80))
-                    .frame(width: 78, alignment: .trailing)
-
-                // Tire column
-                VStack(spacing: 2) {
-                    Circle()
-                        .fill(driver.tire.color)
-                        .frame(width: 18, height: 18)
-                    Text("\(driver.tireLaps)L")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(Color(white: 0.50))
-                }
-                .frame(width: 44)
-
-                // Pits
-                Text("\(driver.pits)")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color(white: 0.70))
-                    .frame(width: 36, alignment: .center)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-        }
-        .background(driver.position % 2 == 0 ? rowBgAlt : rowBg)
-    }
-}
-
-// MARK: - Compact row (positions 11–20)
-
-struct CompactDriverRow: View {
-    let driver: LiveDriver
-
-    var body: some View {
-        HStack(spacing: 0) {
-            // Position
-            Text("\(driver.position)")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(Color(white: 0.55))
-                .frame(width: 32, alignment: .leading)
-                .padding(.leading, 15)
-
-            // Abbrev – Team
-            Text("\(driver.abbrev)  –  \(driver.teamShort)")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundColor(Color(white: 0.75))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Interval
-            Text(driver.interval)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color(white: 0.70))
-                .frame(width: 70, alignment: .trailing)
-
-            // Tire letter
-            Text(driver.tire.letter)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundColor(driver.tire.color)
-                .frame(width: 44, alignment: .center)
-
-            // Pits
-            Text("\(driver.pits)")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color(white: 0.60))
-                .frame(width: 36, alignment: .center)
-        }
-        .padding(.vertical, 11)
-        .background(driver.position % 2 == 0 ? rowBgAlt : rowBg)
     }
 }
 
