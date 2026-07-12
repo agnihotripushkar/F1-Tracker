@@ -48,13 +48,21 @@ actor JolpicaService {
     }
 
     private func fetch<T: Decodable>(_ url: URL) async throws -> T {
+        let data = try await F1NetworkRetry.withRetry { try await self.fetchOnce(url) }
+        return try Self.decoder.decode(T.self, from: data)
+    }
+
+    private func fetchOnce(_ url: URL) async throws -> Data {
         let (data, response) = try await session.data(from: url)
         guard let http = response as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {
-            throw F1ServiceError.badResponse
+            let statusCode = (response as? HTTPURLResponse)?.statusCode
+            throw F1ServiceError.badResponse(statusCode: statusCode)
         }
-        return try JSONDecoder().decode(T.self, from: data)
+        return data
     }
+
+    private static let decoder = JSONDecoder()
 }
 
 extension JolpicaService: JolpicaServicing {}

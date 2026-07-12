@@ -13,7 +13,7 @@ protocol OpenF1Servicing: Sendable {
 // Shared error type for all F1 services
 enum F1ServiceError: LocalizedError {
     case invalidURL
-    case badResponse
+    case badResponse(statusCode: Int?)
     case noData
 
     var errorDescription: String? {
@@ -70,13 +70,21 @@ actor OpenF1Service {
     }
 
     private func fetchArray<T: Decodable>(_ url: URL) async throws -> [T] {
+        let data = try await F1NetworkRetry.withRetry { try await self.fetchArrayOnce(url) }
+        return try Self.decoder.decode([T].self, from: data)
+    }
+
+    private func fetchArrayOnce(_ url: URL) async throws -> Data {
         let (data, response) = try await session.data(from: url)
         guard let http = response as? HTTPURLResponse,
               (200...299).contains(http.statusCode) else {
-            throw F1ServiceError.badResponse
+            let statusCode = (response as? HTTPURLResponse)?.statusCode
+            throw F1ServiceError.badResponse(statusCode: statusCode)
         }
-        return try JSONDecoder().decode([T].self, from: data)
+        return data
     }
+
+    private static let decoder = JSONDecoder()
 }
 
 extension OpenF1Service: OpenF1Servicing {}

@@ -3,7 +3,7 @@
 
 import Foundation
 
-struct OpenF1WeatherResponse: Decodable {
+nonisolated struct OpenF1WeatherResponse: Decodable {
     let airTemperature: Double
     let trackTemperature: Double
     let humidity: Double
@@ -23,7 +23,7 @@ struct OpenF1WeatherResponse: Decodable {
     }
 }
 
-struct OpenF1IntervalResponse: Decodable {
+nonisolated struct OpenF1IntervalResponse: Decodable {
     let driverNumber: Int
     let gapToLeader: Double?
     let interval: Double?
@@ -39,7 +39,7 @@ struct OpenF1IntervalResponse: Decodable {
     }
 }
 
-struct OpenF1PositionResponse: Decodable {
+nonisolated struct OpenF1PositionResponse: Decodable {
     let driverNumber: Int
     let position: Int
     let sessionKey: Int
@@ -53,7 +53,7 @@ struct OpenF1PositionResponse: Decodable {
     }
 }
 
-struct OpenF1DriverResponse: Decodable {
+nonisolated struct OpenF1DriverResponse: Decodable {
     let driverNumber: Int
     let fullName: String
     let nameAcronym: String
