@@ -5,7 +5,7 @@ import Foundation
 
 // MARK: - Driver Standings
 
-struct JolpicaDriverStandingsResponse: Decodable {
+nonisolated struct JolpicaDriverStandingsResponse: Decodable {
     let mrData: MRData
     enum CodingKeys: String, CodingKey { case mrData = "MRData" }
 
@@ -54,7 +54,7 @@ struct JolpicaDriverStandingsResponse: Decodable {
 
 // MARK: - Constructor Standings
 
-struct JolpicaConstructorStandingsResponse: Decodable {
+nonisolated struct JolpicaConstructorStandingsResponse: Decodable {
     let mrData: MRData
     enum CodingKeys: String, CodingKey { case mrData = "MRData" }
 
@@ -88,7 +88,7 @@ struct JolpicaConstructorStandingsResponse: Decodable {
 
 // MARK: - Race Schedule
 
-struct JolpicaScheduleResponse: Decodable {
+nonisolated struct JolpicaScheduleResponse: Decodable {
     let mrData: MRData
     enum CodingKeys: String, CodingKey { case mrData = "MRData" }
 
